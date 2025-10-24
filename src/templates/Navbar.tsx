@@ -1,3 +1,6 @@
+'use client';
+
+import { UserButton, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
@@ -10,6 +13,7 @@ import { Logo } from './Logo';
 
 export const Navbar = () => {
   const t = useTranslations('Navbar');
+  const { isSignedIn } = useUser();
 
   return (
     <Section className="px-3 py-6">
@@ -21,14 +25,37 @@ export const Navbar = () => {
             <li data-fade>
               <LocaleSwitcher />
             </li>
-            <li className="ml-1 mr-2.5" data-fade>
-              <Link href="/sign-in">{t('sign_in')}</Link>
-            </li>
-            <li>
-              <Link className={buttonVariants()} href="/sign-up">
-                {t('sign_up')}
-              </Link>
-            </li>
+            {isSignedIn
+              ? (
+                  <>
+                    <li className="ml-1 mr-2.5" data-fade>
+                      <Link href="/dashboard">{t('dashboard')}</Link>
+                    </li>
+                    <li>
+                      <UserButton
+                        userProfileMode="navigation"
+                        userProfileUrl="/dashboard/user-profile"
+                        appearance={{
+                          elements: {
+                            rootBox: 'px-2 py-1.5',
+                          },
+                        }}
+                      />
+                    </li>
+                  </>
+                )
+              : (
+                  <>
+                    <li className="ml-1 mr-2.5" data-fade>
+                      <Link href="/sign-in">{t('sign_in')}</Link>
+                    </li>
+                    <li>
+                      <Link className={buttonVariants()} href="/sign-up">
+                        {t('sign_up')}
+                      </Link>
+                    </li>
+                  </>
+                )}
           </>
         )}
       >

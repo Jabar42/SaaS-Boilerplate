@@ -6,6 +6,7 @@
   "Navbar": {
     "sign_in": "Sign In",
     "sign_up": "Sign Up",
+    "dashboard": "Dashboard",
     "product": "Product",
     "docs": "Docs",
     "blog": "Blog",

@@ -88,6 +88,9 @@
   },
   "DashboardLayout": {
     "home": "Home",
+    "chat": "Chat",
+    "usuarios": "Users",
+    "documentos": "Documents",
     "todos": "Todos",
     "members": "Members",
     "billing": "Billing",
@@ -112,6 +115,27 @@
   "OrganizationProfile": {
     "title_bar": "Organization Management",
     "title_bar_description": "Manage your organization"
+  },
+  "Chat": {
+    "title_bar": "Chat",
+    "title_bar_description": "Communicate with your team",
+    "message_state_title": "Chat Coming Soon",
+    "message_state_description": "You can customize this page by editing the file at <code>dashboard/chat/page.tsx</code>",
+    "message_state_alternative": "Chat functionality will be implemented here."
+  },
+  "Usuarios": {
+    "title_bar": "Users",
+    "title_bar_description": "Manage your users and permissions",
+    "message_state_title": "User Management Coming Soon",
+    "message_state_description": "You can customize this page by editing the file at <code>dashboard/usuarios/page.tsx</code>",
+    "message_state_alternative": "User management functionality will be implemented here."
+  },
+  "Documentos": {
+    "title_bar": "Documents",
+    "title_bar_description": "Manage your documents and files",
+    "message_state_title": "Document Management Coming Soon",
+    "message_state_description": "You can customize this page by editing the file at <code>dashboard/documentos/page.tsx</code>",
+    "message_state_alternative": "Document management functionality will be implemented here."
   },
   "Billing": {
     "title_bar": "Billing",

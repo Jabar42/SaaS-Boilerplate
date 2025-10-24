@@ -88,6 +88,9 @@
   },
   "DashboardLayout": {
     "home": "Accueil",
+    "chat": "Chat",
+    "usuarios": "Utilisateurs",
+    "documentos": "Documents",
     "todos": "Todos",
     "members": "Membres",
     "billing": "Facturation",
@@ -110,8 +113,29 @@
     "title_bar_description": "Afficher et gérer votre profil utilisateur"
   },
   "OrganizationProfile": {
-    "title_bar": "Gestion de l’organisation",
+    "title_bar": "Gestion de l'organisation",
     "title_bar_description": "Gérer votre organisation"
+  },
+  "Chat": {
+    "title_bar": "Chat",
+    "title_bar_description": "Communiquez avec votre équipe",
+    "message_state_title": "Chat à venir",
+    "message_state_description": "Vous pouvez personnaliser cette page en modifiant le fichier dans <code>dashboard/chat/page.tsx</code>",
+    "message_state_alternative": "La fonctionnalité de chat sera implémentée ici."
+  },
+  "Usuarios": {
+    "title_bar": "Utilisateurs",
+    "title_bar_description": "Gérez vos utilisateurs et permissions",
+    "message_state_title": "Gestion des utilisateurs à venir",
+    "message_state_description": "Vous pouvez personnaliser cette page en modifiant le fichier dans <code>dashboard/usuarios/page.tsx</code>",
+    "message_state_alternative": "La fonctionnalité de gestion des utilisateurs sera implémentée ici."
+  },
+  "Documentos": {
+    "title_bar": "Documents",
+    "title_bar_description": "Gérez vos documents et fichiers",
+    "message_state_title": "Gestion des documents à venir",
+    "message_state_description": "Vous pouvez personnaliser cette page en modifiant le fichier dans <code>dashboard/documentos/page.tsx</code>",
+    "message_state_alternative": "La fonctionnalité de gestion des documents sera implémentée ici."
   },
   "Billing": {
     "title_bar": "Facturation",

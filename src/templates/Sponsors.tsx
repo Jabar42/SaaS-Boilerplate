@@ -1,8 +1,9 @@
 import { Section } from '@/features/landing/Section';
-import { SponsorLogos } from '@/features/sponsors/SponsorLogos';
 
 export const Sponsors = () => (
   <Section>
-    <SponsorLogos />
+    <div className="text-center text-muted-foreground">
+      {/* Sponsors section removed */}
+    </div>
   </Section>
 );

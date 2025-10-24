@@ -38,6 +38,8 @@ export const Navbar = () => {
                         appearance={{
                           elements: {
                             rootBox: 'px-2 py-1.5',
+                            footer: 'hidden',
+                            footerAction: 'hidden',
                           },
                         }}
                       />

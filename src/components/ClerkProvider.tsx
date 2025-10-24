@@ -37,6 +37,12 @@ export function ClerkProvider({ children, locale }: ClerkProviderProps) {
       signInFallbackRedirectUrl={dashboardUrl}
       signUpFallbackRedirectUrl={dashboardUrl}
       afterSignOutUrl={afterSignOutUrl}
+      appearance={{
+        elements: {
+          footer: 'hidden',
+          footerAction: 'hidden',
+        },
+      }}
     >
       {children}
     </ClerkProviderBase>

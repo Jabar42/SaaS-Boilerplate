@@ -129,6 +129,8 @@ export function AppSidebar({ menu }: AppSidebarProps) {
                       organizationSwitcherTrigger: 'w-full justify-start px-3 py-2 rounded-md',
                       organizationSwitcherTriggerIcon: 'size-4',
                       organizationSwitcherTriggerText: 'block',
+                      footer: 'hidden',
+                      footerAction: 'hidden',
                     },
                   }}
                 />

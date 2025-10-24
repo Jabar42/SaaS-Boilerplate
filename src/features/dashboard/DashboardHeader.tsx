@@ -19,6 +19,8 @@ export const DashboardTopBar = () => {
           appearance={{
             elements: {
               rootBox: 'px-2 py-1.5',
+              footer: 'hidden',
+              footerAction: 'hidden',
             },
           }}
         />

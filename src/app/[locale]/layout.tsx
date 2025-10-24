@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { unstable_setRequestLocale } from 'next-intl/server';
 
+import { ClerkProvider } from '@/components/ClerkProvider';
 import { DemoBadge } from '@/components/DemoBadge';
 import { AllLocales } from '@/utils/AppConfig';
 
@@ -51,18 +52,20 @@ export default function RootLayout(props: {
   // The `suppressHydrationWarning` attribute in <body> is used to prevent hydration errors caused by Sentry Overlay,
   // which dynamically adds a `style` attribute to the body tag.
   return (
-    <html lang={props.params.locale} suppressHydrationWarning>
-      <body className="bg-background text-foreground antialiased" suppressHydrationWarning>
-        {/* PRO: Dark mode support for Shadcn UI */}
-        <NextIntlClientProvider
-          locale={props.params.locale}
-          messages={messages}
-        >
-          {props.children}
+    <ClerkProvider locale={props.params.locale}>
+      <html lang={props.params.locale} suppressHydrationWarning>
+        <body className="bg-background text-foreground antialiased" suppressHydrationWarning>
+          {/* PRO: Dark mode support for Shadcn UI */}
+          <NextIntlClientProvider
+            locale={props.params.locale}
+            messages={messages}
+          >
+            {props.children}
 
-          <DemoBadge />
-        </NextIntlClientProvider>
-      </body>
-    </html>
+            <DemoBadge />
+          </NextIntlClientProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -6,7 +6,7 @@ import {
   Home,
   MessageSquare,
   Settings,
-  UserCheck,
+  // UserCheck,
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -40,7 +40,7 @@ const HomeIcon = () => <Home className="size-4" />;
 const ChatIcon = () => <MessageSquare className="size-4" />;
 const UsersIcon = () => <Users className="size-4" />;
 const DocumentsIcon = () => <FileText className="size-4" />;
-const MembersIcon = () => <UserCheck className="size-4" />;
+// const MembersIcon = () => <UserCheck className="size-4" />;
 const SettingsIcon = () => <Settings className="size-4" />;
 
 // Map menu items to icons
@@ -57,9 +57,9 @@ const getIconForHref = (href: string) => {
   if (href.includes('/documentos')) {
     return <DocumentsIcon />;
   }
-  if (href.includes('/organization-profile/organization-members')) {
-    return <MembersIcon />;
-  }
+  // if (href.includes('/organization-profile/organization-members')) {
+  //   return <MembersIcon />;
+  // }
   if (href.includes('/organization-profile')) {
     return <SettingsIcon />;
   }

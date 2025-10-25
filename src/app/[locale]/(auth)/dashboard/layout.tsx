@@ -42,10 +42,10 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             href: '/dashboard/documentos',
             label: t('documentos'),
           },
-          {
-            href: '/dashboard/organization-profile/organization-members',
-            label: t('members'),
-          },
+          // {
+          //   href: '/dashboard/organization-profile/organization-members',
+          //   label: t('members'),
+          // },
           {
             href: '/dashboard/organization-profile',
             label: t('settings'),

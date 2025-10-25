@@ -1,6 +1,6 @@
 'use client';
 
-import { OrganizationSwitcher } from '@clerk/nextjs';
+// import { OrganizationSwitcher } from '@clerk/nextjs';
 import {
   FileText,
   Home,
@@ -10,8 +10,8 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useLocale } from 'next-intl';
 
+// import { useLocale } from 'next-intl';
 import {
   Sidebar,
   SidebarContent,
@@ -23,10 +23,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
+  // SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/templates/Logo';
-import { getI18nPath } from '@/utils/Helpers';
+// import { getI18nPath } from '@/utils/Helpers';
 
 type AppSidebarProps = {
   menu: {
@@ -67,7 +67,7 @@ const getIconForHref = (href: string) => {
 };
 
 export function AppSidebar({ menu }: AppSidebarProps) {
-  const locale = useLocale();
+  // const locale = useLocale();
 
   return (
     <Sidebar collapsible="icon">
@@ -108,9 +108,9 @@ export function AppSidebar({ menu }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator />
+        {/* <SidebarSeparator /> */}
 
-        /*
+        {/*
         <SidebarGroup>
           <SidebarGroupLabel>Organization</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -139,7 +139,7 @@ export function AppSidebar({ menu }: AppSidebarProps) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        */
+        */}
       </SidebarContent>
 
       <SidebarFooter>

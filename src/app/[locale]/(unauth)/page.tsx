@@ -1,5 +1,6 @@
 import { getTranslations, unstable_setRequestLocale } from 'next-intl/server';
 
+import { ClerkPricingTable } from '@/templates/ClerkPricingTable';
 import { CTA } from '@/templates/CTA';
 import { DemoBanner } from '@/templates/DemoBanner';
 import { FAQ } from '@/templates/FAQ';
@@ -33,6 +34,7 @@ const IndexPage = (props: { params: { locale: string } }) => {
       <Sponsors />
       <Features />
       <Pricing />
+      <ClerkPricingTable />
       <FAQ />
       <CTA />
       <Footer />

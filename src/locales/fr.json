@@ -41,11 +41,6 @@
     "section_description": "Un template gratuit et open-source de landing page pour votre entreprise SaaS, construit avec React, TypeScript, Shadcn UI et Tailwind CSS.",
     "button_text": "Démarrer"
   },
-  "ClerkPricing": {
-    "section_subtitle": "Facturation",
-    "section_title": "Choisissez Votre Plan d'Organisation",
-    "section_description": "Sélectionnez le plan parfait pour votre organisation avec notre système de facturation intégré alimenté par Clerk."
-  },
   "PricingPlan": {
     "free_plan_name": "Gratuit",
     "premium_plan_name": "Premium",

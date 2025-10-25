@@ -110,6 +110,7 @@ export function AppSidebar({ menu }: AppSidebarProps) {
 
         <SidebarSeparator />
 
+        /*
         <SidebarGroup>
           <SidebarGroupLabel>Organization</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -138,6 +139,7 @@ export function AppSidebar({ menu }: AppSidebarProps) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        */
       </SidebarContent>
 
       <SidebarFooter>

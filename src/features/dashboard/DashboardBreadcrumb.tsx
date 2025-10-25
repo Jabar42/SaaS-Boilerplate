@@ -27,9 +27,13 @@ export const DashboardBreadcrumb = () => {
     return null;
   }
 
-  const breadcrumbItems = pathSegments.map((segment, index) => {
-    const href = `/${pathSegments.slice(0, index + 1).join('/')}`;
-    const isLast = index === pathSegments.length - 1;
+  // Filter out 'dashboard' since we add it manually as the first breadcrumb
+  const filteredSegments = pathSegments.filter(segment => segment !== 'dashboard');
+
+  const breadcrumbItems = filteredSegments.map((segment, index) => {
+    // Reconstruct href including 'dashboard' in the path
+    const href = `/dashboard/${filteredSegments.slice(0, index + 1).join('/')}`;
+    const isLast = index === filteredSegments.length - 1;
     const label = segment
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))

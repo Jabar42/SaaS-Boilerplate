@@ -1,0 +1,191 @@
+{
+  "Index": {
+    "meta_title": "VSB-Tech - Agente IA para Clínicas Veterinarias",
+    "meta_description": "Revoluciona tu clínica veterinaria con nuestro agente de IA inteligente. Gestión automatizada de citas, respuestas 24/7 y recordatorios de vacunas."
+  },
+  "Navbar": {
+    "sign_in": "Iniciar Sesión",
+    "sign_up": "Registrarse",
+    "dashboard": "Panel",
+    "product": "Producto",
+    "docs": "Documentación",
+    "blog": "Blog",
+    "community": "Comunidad",
+    "company": "Empresa"
+  },
+  "Hero": {
+    "follow_twitter": "Síguenos en Twitter",
+    "title": "El <important>agente de IA</important> perfecto para revolucionar tu clínica veterinaria.",
+    "description": "Automatiza la gestión de citas, responde consultas 24/7 y mejora la atención al paciente con nuestra tecnología de inteligencia artificial especializada en veterinaria.",
+    "primary_button": "Solicitar Demo",
+    "secondary_button": "Conocer Más"
+  },
+  "Sponsors": {
+    "title": "Patrocinado por"
+  },
+  "Features": {
+    "section_subtitle": "Características",
+    "section_title": "Desbloquea el Potencial Completo de VSB-Tech",
+    "section_description": "Nuestro agente de IA está diseñado específicamente para clínicas veterinarias, ofreciendo herramientas inteligentes que mejoran la eficiencia y la atención al paciente.",
+    "feature1_title": "Gestión Automatizada de Citas",
+    "feature2_title": "Respuestas 24/7",
+    "feature3_title": "Recordatorios de Vacunas",
+    "feature4_title": "Historial Médico Inteligente",
+    "feature5_title": "Triaje de Emergencias",
+    "feature6_title": "Integración con Sistemas Existentes",
+    "feature_description": "Herramientas de IA especializadas que optimizan las operaciones de tu clínica veterinaria y mejoran la experiencia del paciente."
+  },
+  "Pricing": {
+    "section_subtitle": "Precios",
+    "section_title": "Planes Adaptados para Clínicas Veterinarias",
+    "section_description": "Elige el plan que mejor se adapte al tamaño y necesidades de tu clínica veterinaria.",
+    "button_text": "Comenzar"
+  },
+  "PricingPlan": {
+    "free_plan_name": "Gratuito",
+    "premium_plan_name": "Premium",
+    "enterprise_plan_name": "Empresarial",
+    "free_plan_description": "Para clínicas pequeñas",
+    "premium_plan_description": "Para clínicas medianas",
+    "enterprise_plan_description": "Para hospitales veterinarios grandes",
+    "feature_team_member": "{number} Miembros del Equipo",
+    "feature_website": "{number} Sitios Web",
+    "feature_storage": "{number} GB Almacenamiento",
+    "feature_transfer": "{number} TB Transferencia",
+    "feature_email_support": "Soporte por Email",
+    "plan_interval_month": "mes",
+    "plan_interval_year": "año",
+    "next_renew_date": "Tu suscripción se renueva el {date}"
+  },
+  "FAQ": {
+    "question": "¿Cómo funciona el agente de IA para clínicas veterinarias?",
+    "answer": "Nuestro agente de IA utiliza tecnología avanzada de procesamiento de lenguaje natural para entender consultas veterinarias, gestionar citas automáticamente y proporcionar respuestas inteligentes 24/7. Se integra perfectamente con tu sistema de gestión existente."
+  },
+  "CTA": {
+    "title": "¿Listo para revolucionar tu clínica?",
+    "description": "Descubre cómo VSB-Tech puede transformar la forma en que atiendes a tus pacientes.",
+    "button_text": "Solicitar Demo Gratuita"
+  },
+  "Footer": {
+    "product": "Producto",
+    "docs": "Documentación",
+    "blog": "Blog",
+    "community": "Comunidad",
+    "company": "Empresa",
+    "terms_of_service": "Términos de Servicio",
+    "privacy_policy": "Política de Privacidad",
+    "designed_by": "Diseñado por <author></author>."
+  },
+  "ProtectFallback": {
+    "not_enough_permission": "No tienes permisos para realizar esta acción"
+  },
+  "SignIn": {
+    "meta_title": "Iniciar sesión",
+    "meta_description": "Inicia sesión de forma segura en tu cuenta de VSB-Tech."
+  },
+  "SignUp": {
+    "meta_title": "Registrarse",
+    "meta_description": "Crea tu cuenta de VSB-Tech y comienza a revolucionar tu clínica veterinaria."
+  },
+  "DashboardLayout": {
+    "home": "Inicio",
+    "chat": "Chat",
+    "usuarios": "Usuarios",
+    "documentos": "Documentos",
+    "todos": "Tareas",
+    "members": "Miembros",
+    "billing": "Facturación",
+    "settings": "Configuración"
+  },
+  "Dashboard": {
+    "meta_title": "Panel VSB-Tech",
+    "meta_description": "Gestiona tu clínica veterinaria con nuestro agente de IA inteligente."
+  },
+  "DashboardIndex": {
+    "title_bar": "Panel",
+    "title_bar_description": "Bienvenido a tu panel de control",
+    "message_state_title": "Comencemos",
+    "message_state_description": "Puedes personalizar esta página editando el archivo en <code>dashboard/page.tsx</code>",
+    "message_state_button": "Solicitar Demo",
+    "message_state_alternative": "¿Quieres más características? Prueba <url></url>."
+  },
+  "UserProfile": {
+    "title_bar": "Perfil de Usuario",
+    "title_bar_description": "Ver y gestionar tu perfil de usuario"
+  },
+  "OrganizationProfile": {
+    "title_bar": "Gestión de Organización",
+    "title_bar_description": "Gestiona tu organización"
+  },
+  "Chat": {
+    "title_bar": "Chat",
+    "title_bar_description": "Comunícate con tu equipo",
+    "message_state_title": "Chat Próximamente",
+    "message_state_description": "Puedes personalizar esta página editando el archivo en <code>dashboard/chat/page.tsx</code>",
+    "message_state_alternative": "La funcionalidad de chat se implementará aquí."
+  },
+  "Usuarios": {
+    "title_bar": "Usuarios",
+    "title_bar_description": "Gestiona tus usuarios y permisos",
+    "message_state_title": "Gestión de Usuarios Próximamente",
+    "message_state_description": "Puedes personalizar esta página editando el archivo en <code>dashboard/usuarios/page.tsx</code>",
+    "message_state_alternative": "La funcionalidad de gestión de usuarios se implementará aquí."
+  },
+  "Documentos": {
+    "title_bar": "Documentos",
+    "title_bar_description": "Gestiona tus documentos y archivos",
+    "message_state_title": "Gestión de Documentos Próximamente",
+    "message_state_description": "Puedes personalizar esta página editando el archivo en <code>dashboard/documentos/page.tsx</code>",
+    "message_state_alternative": "La funcionalidad de gestión de documentos se implementará aquí."
+  },
+  "Billing": {
+    "title_bar": "Facturación",
+    "title_bar_description": "Gestiona tu facturación y suscripción",
+    "current_section_title": "Plan Actual",
+    "current_section_description": "Ajusta tu plan de pago para que se adapte mejor a tus necesidades",
+    "manage_subscription_button": "Gestionar Suscripción"
+  },
+  "BillingOptions": {
+    "current_plan": "Plan Actual",
+    "upgrade_plan": "Comenzar"
+  },
+  "CheckoutConfirmation": {
+    "title_bar": "Confirmación de Pago",
+    "message_state_title": "Pago exitoso",
+    "message_state_description": "Tu pago se ha procesado correctamente. ¡Gracias por tu compra!",
+    "message_state_button": "Volver a Facturación"
+  },
+  "DataTable": {
+    "no_results": "Sin resultados."
+  },
+  "Todos": {
+    "title_bar": "Lista de Tareas",
+    "title_bar_description": "Ver y gestionar tu lista de tareas",
+    "add_todo_button": "Nueva tarea"
+  },
+  "TodoTableColumns": {
+    "open_menu": "Abrir menú",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "title_header": "Título",
+    "message_header": "Mensaje",
+    "created_at_header": "Creado en"
+  },
+  "AddTodo": {
+    "title_bar": "Agregar Tarea",
+    "add_todo_section_title": "Crear una nueva tarea",
+    "add_todo_section_description": "Completa el formulario a continuación para crear una nueva tarea"
+  },
+  "EditTodo": {
+    "title_bar": "Editar tarea",
+    "edit_todo_section_title": "Modificar tarea",
+    "edit_todo_section_description": "Completa el formulario a continuación para editar la tarea"
+  },
+  "TodoForm": {
+    "title_label": "Título",
+    "title_description": "Ingresa un título descriptivo para tu tarea.",
+    "message_title": "Mensaje",
+    "message_description": "Ingresa un mensaje detallado para tu tarea.",
+    "submit_button": "Enviar"
+  }
+}

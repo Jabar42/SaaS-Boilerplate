@@ -2,15 +2,15 @@ import { BILLING_INTERVAL, type PricingPlan } from '@/types/Subscription';
 
 const localePrefix = 'as-needed' as const;
 
-// FIXME: Update this configuration file based on your project information
+// VSB-Tech Veterinary AI Agent Configuration
 export const AppConfig = {
-  name: 'SaaS Template',
+  name: 'VSB-Tech',
   locales: [
     {
       id: 'en',
       name: 'English',
     },
-    { id: 'fr', name: 'Français' },
+    { id: 'es', name: 'Español' },
   ],
   defaultLocale: 'en',
   localePrefix,

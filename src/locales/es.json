@@ -74,7 +74,7 @@
     "company": "Empresa",
     "terms_of_service": "Términos de Servicio",
     "privacy_policy": "Política de Privacidad",
-    "designed_by": "Diseñado por <author></author>."
+    "designed_by": ""
   },
   "ProtectFallback": {
     "not_enough_permission": "No tienes permisos para realizar esta acción"

@@ -1,0 +1,32 @@
+// Prisma schema generated from current Drizzle schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id                                        String  @id
+  stripeCustomerId                           String? @unique(map: "stripe_customer_id_idx")
+  stripeSubscriptionId                       String?
+  stripeSubscriptionPriceId                  String?
+  stripeSubscriptionStatus                   String?
+  stripeSubscriptionCurrentPeriodEnd         BigInt?
+  updatedAt                                  DateTime @default(now())
+  createdAt                                  DateTime @default(now())
+}
+
+model Todo {
+  id        Int      @id @default(autoincrement())
+  ownerId   String
+  title     String
+  message   String
+  updatedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+

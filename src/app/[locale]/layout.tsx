@@ -48,8 +48,7 @@ export default function RootLayout(props: {
   // The `suppressHydrationWarning` in <html> is used to prevent hydration errors caused by `next-themes`.
   // Solution provided by the package itself: https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
 
-  // The `suppressHydrationWarning` attribute in <body> is used to prevent hydration errors caused by Sentry Overlay,
-  // which dynamically adds a `style` attribute to the body tag.
+  // The `suppressHydrationWarning` attribute in <body> is used to prevent hydration errors.
   return (
     <ClerkProvider locale={props.params.locale}>
       <html lang={props.params.locale} suppressHydrationWarning>

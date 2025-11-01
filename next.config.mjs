@@ -42,6 +42,12 @@ export default withSentryConfig(
     // For all available options, see:
     // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
+    // Disable source maps upload if no auth token is provided
+    // This prevents build failures when Sentry is not fully configured
+    // If you want to use Sentry, set SENTRY_AUTH_TOKEN in your Vercel environment variables
+    disableServerWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+    disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+
     // Upload a larger set of source maps for prettier stack traces (increases build time)
     widenClientFileUpload: true,
 

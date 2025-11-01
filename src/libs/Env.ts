@@ -9,6 +9,7 @@ export const Env = createEnv({
     STRIPE_SECRET_KEY: z.string().min(1),
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
     BILLING_PLAN_ENV: z.enum(['dev', 'test', 'prod']),
+    N8N_ENDPOINT: z.string().url(),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().optional(),
@@ -27,6 +28,7 @@ export const Env = createEnv({
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     BILLING_PLAN_ENV: process.env.BILLING_PLAN_ENV,
+    N8N_ENDPOINT: process.env.N8N_ENDPOINT,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,

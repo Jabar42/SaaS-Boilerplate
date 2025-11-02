@@ -1,3 +1,13 @@
+---
+description: Arquitectura general del proyecto SaaS
+globs:
+  - src/**/*.{ts,tsx,js,jsx,md,mdx}
+  - apps/**/*.{ts,tsx}
+  - packages/**/*.{ts,tsx}
+  - prisma/**/*.prisma
+alwaysApply: true
+---
+
 # Arquitectura del Proyecto SaaS
 
 ## Resumen Ejecutivo
@@ -45,18 +55,18 @@ src/
 ```typescript
 // ✅ Componentes de features
 // ✅ Componentes compartidos
-import { ActiveLink } from "@/components/ActiveLink";
+import { ActiveLink } from '@/components/ActiveLink';
 // ✅ Componentes UI compartidos (shadcn)
-import { Button } from "@/components/ui/button";
-import { Component } from "@/features/[nombre-feature]/ComponentName";
+import { Button } from '@/components/ui/button';
+import { Component } from '@/features/[nombre-feature]/ComponentName';
 // ✅ Hooks compartidos
-import { useMenu } from "@/hooks/UseMenu";
+import { useMenu } from '@/hooks/UseMenu';
 // ✅ Configuración de librerías
-import { db } from "@/libs/DB";
+import { db } from '@/libs/DB';
 // ✅ Tipos compartidos
-import type { User } from "@/types/Auth";
+import type { User } from '@/types/Auth';
 // ✅ Utilidades
-import { cn } from "@/utils/Helpers";
+import { cn } from '@/utils/Helpers';
 ```
 
 ## Patrón para Agregar Nuevas Features
@@ -177,9 +187,9 @@ export type DocumentFilters = {
 ```typescript
 // src/features/documents/hooks/useDocuments.ts
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { Document } from "../types/document.types";
+import { Document } from '../types/document.types';
 
 export function useDocuments(organizationId: string) {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -277,9 +287,9 @@ Cada feature debe ser independiente:
 
 ```typescript
 // ✅ Correcto - reusar componentes existentes
-import { Button } from "@/components/ui/button";
-import { MessageState } from "@/features/dashboard/MessageState";
-import { TitleBar } from "@/features/dashboard/TitleBar";
+import { Button } from '@/components/ui/button';
+import { MessageState } from '@/features/dashboard/MessageState';
+import { TitleBar } from '@/features/dashboard/TitleBar';
 
 // ❌ Incorrecto - crear nuevo componente cuando existe uno similar
 // NO crear DocumentTitleBar cuando existe TitleBar
@@ -293,7 +303,7 @@ Para acceso a base de datos:
 
 ```typescript
 // src/features/documents/components/DocumentList.tsx
-import { db } from "@/libs/DB";
+import { db } from '@/libs/DB';
 
 const documents = await db.document.findMany({ where: { organizationId } });
 ```
@@ -302,9 +312,9 @@ const documents = await db.document.findMany({ where: { organizationId } });
 
 ```typescript
 // src/features/documents/utils/document.repository.ts
-import { db } from "@/libs/DB";
+import { db } from '@/libs/DB';
 
-import { Document } from "../types/document.types";
+import { Document } from '../types/document.types';
 
 export async function getDocumentsByOrganization(
   orgId: string,
@@ -323,10 +333,10 @@ export async function getDocumentsByOrganization(
 
 ```typescript
 // ✅ src/types/Auth.ts - compartido entre múltiples features
-export type OrgRole = "org:admin" | "org:member";
+export type OrgRole = 'org:admin' | 'org:member';
 
 // ✅ src/features/documents/types/document.types.ts - solo para documents
-export type DocumentStatus = "draft" | "published" | "archived";
+export type DocumentStatus = 'draft' | 'published' | 'archived';
 
 // ❌ NO poner tipos de documents en types/Auth.ts
 ```
@@ -365,8 +375,8 @@ Si la feature necesita aparecer en el menú:
 ```typescript
 // src/features/dashboard/DashboardSidebar.tsx
 const menu = [
-  { href: "/dashboard", label: t("home") },
-  { href: "/dashboard/documentos", label: t("documentos") }, // Nueva feature
+  { href: '/dashboard', label: t('home') },
+  { href: '/dashboard/documentos', label: t('documentos') }, // Nueva feature
   // ...
 ];
 ```
@@ -435,12 +445,12 @@ export const DOCUMENT_TYPES = {};
 
 ```typescript
 // Importar DB
-import { db } from "@/libs/DB";
+import { db } from '@/libs/DB';
 
 // En Server Components o Server Actions
 const documents = await db.document.findMany({
   where: { organizationId },
-  orderBy: { createdAt: "desc" },
+  orderBy: { createdAt: 'desc' },
 });
 ```
 
@@ -450,15 +460,15 @@ Para mutaciones de datos, usar Server Actions de Next.js:
 
 ```typescript
 // src/app/[locale]/(auth)/dashboard/documentos/actions.ts
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
 
-import { db } from "@/libs/DB";
+import { db } from '@/libs/DB';
 
 export async function deleteDocument(id: string) {
   await db.document.delete({ where: { id } });
-  revalidatePath("/dashboard/documentos");
+  revalidatePath('/dashboard/documentos');
 }
 ```
 

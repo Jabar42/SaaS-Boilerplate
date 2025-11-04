@@ -29,19 +29,21 @@ export function ChatInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="fixed inset-x-0 bottom-0 z-10 border-t bg-background p-4"
+      className="fixed inset-x-0 bottom-0 z-10 border-t bg-background md:left-[var(--sidebar-width)]"
     >
-      <div className="mx-auto flex max-w-4xl gap-2">
-        <Input
-          value={input}
-          onChange={e => setInput(e.currentTarget.value)}
-          placeholder={placeholder}
-          disabled={disabled}
-          className="flex-1"
-        />
-        <Button type="submit" disabled={disabled || !input.trim()}>
-          Send
-        </Button>
+      <div className="mx-auto max-w-screen-xl px-6 py-4">
+        <div className="flex gap-2">
+          <Input
+            value={input}
+            onChange={e => setInput(e.currentTarget.value)}
+            placeholder={placeholder}
+            disabled={disabled}
+            className="flex-1"
+          />
+          <Button type="submit" disabled={disabled || !input.trim()}>
+            Send
+          </Button>
+        </div>
       </div>
     </form>
   );

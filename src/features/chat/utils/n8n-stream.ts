@@ -1,18 +1,43 @@
 import { logger } from '@/libs/Logger';
 
-export async function createN8nStream(prompt: string, endpoint: string) {
+type UserData = {
+  userId: string | null;
+  email: string | null;
+  firstName: string | null;
+  orgId: string | null;
+  orgRole: string | null;
+  sessionId: string | null;
+};
+
+export async function createN8nStream(
+  prompt: string,
+  endpoint: string,
+  userData: UserData,
+) {
   // Construir URL con chatInput como query parameter
   const url = new URL(endpoint);
   url.searchParams.set('chatInput', prompt);
 
-  // Hacer POST al webhook de n8n
+  // Preparar body con datos del usuario
+  const requestBody = {
+    user: {
+      id: userData.userId,
+      email: userData.email,
+      firstName: userData.firstName,
+      orgId: userData.orgId,
+      orgRole: userData.orgRole,
+      sessionId: userData.sessionId,
+    },
+  };
+
+  // Hacer POST al webhook de n8n con datos del usuario
   const response = await fetch(url.toString(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'text/event-stream',
     },
-    body: JSON.stringify({}), // n8n espera un body vacío en POST
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {

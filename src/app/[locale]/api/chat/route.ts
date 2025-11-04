@@ -1,3 +1,4 @@
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { createUIMessageStreamResponse } from 'ai';
 import type { NextRequest } from 'next/server';
 
@@ -10,6 +11,21 @@ export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
   try {
+    // Obtener datos de autenticación del usuario
+    const { userId, orgId, orgRole, sessionId } = await auth();
+    const user = await currentUser();
+
+    // Verificar que el usuario esté autenticado
+    if (!userId || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
+
     const body = await req.json();
 
     const { messages } = body;
@@ -37,10 +53,21 @@ export async function POST(req: NextRequest) {
       throw new Error('No user message found');
     }
 
-    // Crear stream directamente desde n8n
+    // Preparar datos del usuario para enviar al webhook
+    const userData = {
+      userId: userId || null,
+      email: user.emailAddresses[0]?.emailAddress || null,
+      firstName: user.firstName || null,
+      orgId: orgId || null,
+      orgRole: orgRole || null,
+      sessionId: sessionId || null,
+    };
+
+    // Crear stream directamente desde n8n con datos del usuario
     const n8nTextStream = await createN8nStream(
       lastUserMessage,
       Env.N8N_ENDPOINT,
+      userData,
     );
 
     // Convertir texto en stream de UIMessageChunk para @ai-sdk/react useChat

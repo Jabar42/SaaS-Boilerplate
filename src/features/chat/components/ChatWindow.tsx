@@ -30,9 +30,9 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
   }, [messages]);
 
   return (
-    <div className="flex h-[calc(100vh-12rem)] flex-col">
+    <div className="flex h-full flex-col">
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto pb-32">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-32">
         {error && (
           <div className="mb-4 rounded-lg border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
             <strong>Error:</strong>

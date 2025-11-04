@@ -27,10 +27,6 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
       <AppSidebar
         menu={[
           {
-            href: '/dashboard',
-            label: t('home'),
-          },
-          {
             href: '/dashboard/chat',
             label: t('chat'),
           },

@@ -95,7 +95,8 @@
     "todos": "Tareas",
     "members": "Miembros",
     "billing": "Facturación",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "settings_description": "Gestiona tu configuración"
   },
   "Dashboard": {
     "meta_title": "Panel VSB-Tech",

@@ -10,6 +10,7 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 // import { useLocale } from 'next-intl';
 import {
@@ -68,6 +69,7 @@ const getIconForHref = (href: string) => {
 
 export function AppSidebar({ menu }: AppSidebarProps) {
   // const locale = useLocale();
+  const t = useTranslations('DashboardLayout');
 
   return (
     <Sidebar collapsible="icon">
@@ -146,13 +148,13 @@ export function AppSidebar({ menu }: AppSidebarProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard/user-profile">
+              <Link href="/dashboard/organization-profile">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <div className="size-4 rounded-full bg-sidebar-primary-foreground" />
+                  <SettingsIcon />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">User Profile</span>
-                  <span className="truncate text-xs">Manage your account</span>
+                  <span className="truncate font-semibold">{t('settings')}</span>
+                  <span className="truncate text-xs">{t('settings_description')}</span>
                 </div>
               </Link>
             </SidebarMenuButton>

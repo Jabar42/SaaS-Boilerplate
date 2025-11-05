@@ -29,19 +29,42 @@ export function useFileUpload() {
       { fileName: file.name, progress: 0, status: 'uploading' },
     ]);
 
-    // Simular progreso (Server Actions no soportan progreso real)
-    // Actualizar progreso a 50% al iniciar
-    setUploadProgress(prev =>
-      prev.map(item =>
-        item.fileName === file.name
-          ? { ...item, progress: 50, status: 'uploading' }
-          : item,
-      ),
-    );
+    // Función para animar el progreso gradualmente
+    const animateProgress = (
+      startProgress: number,
+      endProgress: number,
+      duration: number,
+    ) => {
+      return new Promise<void>((resolve) => {
+        const startTime = Date.now();
+        const updateProgress = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(
+            startProgress + ((endProgress - startProgress) * elapsed) / duration,
+            endProgress,
+          );
 
-    if (onProgress) {
-      onProgress(50);
-    }
+          setUploadProgress(prev =>
+            prev.map(item =>
+              item.fileName === file.name
+                ? { ...item, progress: Math.round(progress), status: 'uploading' }
+                : item,
+            ),
+          );
+
+          if (onProgress) {
+            onProgress(Math.round(progress));
+          }
+
+          if (progress < endProgress) {
+            requestAnimationFrame(updateProgress);
+          } else {
+            resolve();
+          }
+        };
+        requestAnimationFrame(updateProgress);
+      });
+    };
 
     try {
       // Verificar tamaño del archivo antes de intentar subir
@@ -57,12 +80,27 @@ export function useFileUpload() {
       formData.append('file', file);
       formData.append('fileName', fileName);
 
+      // Animar progreso de 0% a 70% mientras se prepara la subida
+      await animateProgress(0, 70, 300);
+
       // Usar Server Action para subir archivo
-      const result = await uploadFileAction(formData);
+      const uploadPromise = uploadFileAction(formData);
+
+      // Animar progreso de 70% a 95% mientras se sube (estimación)
+      const progressAnimation = animateProgress(70, 95, 1000);
+
+      // Esperar a que termine la subida
+      const result = await uploadPromise;
+
+      // Esperar a que termine la animación de progreso
+      await progressAnimation;
 
       if (!result.success) {
         throw new Error(result.error || 'Error al subir el archivo');
       }
+
+      // Animar progreso de 95% a 100% al completar
+      await animateProgress(95, 100, 200);
 
       // Actualizar progreso a éxito
       setUploadProgress(prev =>

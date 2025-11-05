@@ -161,7 +161,7 @@ export async function deleteFile(
 
 export async function downloadFile(
   filePath: string,
-): Promise<{ success: boolean; error?: string; data?: Blob }> {
+): Promise<{ success: boolean; error?: string; url?: string }> {
   try {
     // Verificar autenticación con Clerk
     const { userId } = await auth();
@@ -178,16 +178,20 @@ export async function downloadFile(
       return { success: false, error: 'No autorizado para descargar este archivo' };
     }
 
-    // Descargar archivo
+    // Generar URL firmada para descarga (válida por 60 segundos)
     const { data, error } = await supabaseAdmin.storage
       .from('documents')
-      .download(filePath);
+      .createSignedUrl(filePath, 60);
 
     if (error) {
       return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    if (!data?.signedUrl) {
+      return { success: false, error: 'No se pudo generar la URL de descarga' };
+    }
+
+    return { success: true, url: data.signedUrl };
   } catch (error) {
     return {
       success: false,

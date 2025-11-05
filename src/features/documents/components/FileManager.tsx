@@ -107,19 +107,18 @@ export function FileManager() {
     try {
       const result = await downloadFileAction(file.path);
 
-      if (!result.success || !result.data) {
+      if (!result.success || !result.url) {
         throw new Error(result.error || 'Error al descargar el archivo');
       }
 
-      // Crear enlace de descarga usando el nombre original del archivo
-      const url = URL.createObjectURL(result.data);
+      // Crear enlace de descarga usando la URL firmada
       const a = document.createElement('a');
-      a.href = url;
+      a.href = result.url;
       a.download = file.name; // Usa el nombre original guardado en metadata
+      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
 
       toast({
         title: t('download_success_title'),

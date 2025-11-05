@@ -25,5 +25,9 @@ export default bundleAnalyzer(
     experimental: {
       serverComponentsExternalPackages: ['@electric-sql/pglite'],
     },
+    // Configurar límite de tamaño para Server Actions (50MB)
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
   }),
 );

@@ -3,6 +3,7 @@
 import { enUS, frFR } from '@clerk/localizations';
 import { ClerkProvider } from '@clerk/nextjs';
 
+import { Toaster } from '@/components/ui/toaster';
 import { AppConfig } from '@/utils/AppConfig';
 
 export default function AuthLayout(props: {
@@ -37,6 +38,7 @@ export default function AuthLayout(props: {
       afterSignOutUrl={afterSignOutUrl}
     >
       {props.children}
+      <Toaster />
     </ClerkProvider>
   );
 }

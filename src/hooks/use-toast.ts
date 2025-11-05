@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast';
 
 const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
+const TOAST_REMOVE_DELAY = 5000; // 5 segundos
 
 type ToasterToast = ToastProps & {
   id: string;
@@ -150,6 +150,11 @@ function toast({ ...props }: Toast) {
       },
     },
   });
+
+  // Automáticamente desvanecer el toast después del delay
+  setTimeout(() => {
+    dismiss();
+  }, TOAST_REMOVE_DELAY);
 
   return {
     id,

@@ -111,14 +111,25 @@ export function FileManager() {
         throw new Error(result.error || 'Error al descargar el archivo');
       }
 
-      // Crear enlace de descarga usando la URL firmada
+      // Descargar archivo usando fetch para evitar abrir nueva pestaña
+      const response = await fetch(result.url);
+      if (!response.ok) {
+        throw new Error('Error al descargar el archivo');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      // Crear enlace de descarga sin abrir nueva pestaña
       const a = document.createElement('a');
-      a.href = result.url;
+      a.href = url;
       a.download = file.name; // Usa el nombre original guardado en metadata
-      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+
+      // Limpiar URL del objeto
+      URL.revokeObjectURL(url);
 
       toast({
         title: t('download_success_title'),

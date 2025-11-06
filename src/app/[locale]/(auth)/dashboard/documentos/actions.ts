@@ -1,23 +1,52 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import type { FileItem } from '@/features/documents/types/file.types';
 import { Env } from '@/libs/Env';
+import { logger } from '@/libs/Logger';
 
-// Cliente de Supabase con Service Role Key para operaciones del servidor
+// Singleton para el cliente de administrador (mejor performance)
+let supabaseAdminInstance: SupabaseClient | null = null;
+
+// Función helper para obtener el cliente de Supabase con Service Role Key
 // ⚠️ NUNCA exponer este key en el cliente
-const supabaseAdmin = createClient(
-  Env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || Env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-  {
+function getSupabaseAdmin(): SupabaseClient {
+  // Reutilizar instancia si ya existe
+  if (supabaseAdminInstance) {
+    return supabaseAdminInstance;
+  }
+
+  const supabaseUrl = Env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = Env.SUPABASE_SERVICE_ROLE_KEY;
+
+  // Validación estricta - fallar de forma clara si faltan variables
+  if (!supabaseUrl) {
+    throw new Error(
+      '[Server Action] NEXT_PUBLIC_SUPABASE_URL no está configurado. '
+      + 'Esta variable es requerida para operaciones con Supabase Storage.',
+    );
+  }
+
+  if (!serviceRoleKey) {
+    throw new Error(
+      '[Server Action] SUPABASE_SERVICE_ROLE_KEY no está configurado. '
+      + 'Esta key es necesaria para operaciones de administrador en Supabase Storage. '
+      + 'Configúrala en las variables de entorno de producción.',
+    );
+  }
+
+  // Crear y cachear la instancia
+  supabaseAdminInstance = createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
-  },
-);
+  });
+
+  return supabaseAdminInstance;
+}
 
 export async function uploadFile(
   formData: FormData,
@@ -86,6 +115,9 @@ export async function uploadFile(
     // Convertir File a ArrayBuffer para Supabase
     const arrayBuffer = await file.arrayBuffer();
 
+    // Obtener cliente de Supabase (validará que el Service Role Key esté configurado)
+    const supabaseAdmin = getSupabaseAdmin();
+
     // Subir archivo usando Service Role Key
     // Guardar el nombre original en metadata para poder mostrarlo después
     // upsert: true permite sobrescribir archivos con el mismo nombre
@@ -102,10 +134,10 @@ export async function uploadFile(
       });
 
     if (error) {
-      console.error('[Server Action] Error uploading file:', {
-        message: error.message,
-        error,
-      });
+      logger.error(
+        { error, message: error.message },
+        '[Server Action] Error uploading file',
+      );
       return {
         success: false,
         error: error.message || 'Error al subir el archivo',
@@ -114,7 +146,7 @@ export async function uploadFile(
 
     return { success: true, path: data.path };
   } catch (error) {
-    console.error('[Server Action] Exception uploading file:', error);
+    logger.error({ error }, '[Server Action] Exception uploading file');
     return {
       success: false,
       error:
@@ -140,6 +172,9 @@ export async function deleteFile(
     if (!filePath.startsWith(`tenants/${userId}/`)) {
       return { success: false, error: 'No autorizado para eliminar este archivo' };
     }
+
+    // Obtener cliente de Supabase (validará que el Service Role Key esté configurado)
+    const supabaseAdmin = getSupabaseAdmin();
 
     // Eliminar archivo
     const { error } = await supabaseAdmin.storage
@@ -178,6 +213,9 @@ export async function downloadFile(
       return { success: false, error: 'No autorizado para descargar este archivo' };
     }
 
+    // Obtener cliente de Supabase (validará que el Service Role Key esté configurado)
+    const supabaseAdmin = getSupabaseAdmin();
+
     // Generar URL firmada para descarga (válida por 60 segundos)
     const { data, error } = await supabaseAdmin.storage
       .from('documents')
@@ -211,11 +249,16 @@ export async function listFiles(): Promise<{
     const { userId } = await auth();
 
     if (!userId) {
+      logger.warn('[Server Action] listFiles: Usuario no autenticado');
       return { success: false, error: 'No autenticado' };
     }
 
+    // Obtener cliente de Supabase (validará que el Service Role Key esté configurado)
+    const supabaseAdmin = getSupabaseAdmin();
+
     // Obtener archivos del usuario desde /tenants/{userId}/
     const userPath = `tenants/${userId}/`;
+    logger.debug({ userPath }, '[Server Action] listFiles: Listando archivos del usuario');
     const { data: userData, error: userError } = await supabaseAdmin.storage
       .from('documents')
       .list(userPath, {
@@ -225,6 +268,10 @@ export async function listFiles(): Promise<{
       });
 
     if (userError) {
+      logger.error(
+        { error: userError, userId, userPath, message: userError.message },
+        '[Server Action] Error listando archivos del usuario',
+      );
       return { success: false, error: userError.message };
     }
 
@@ -245,6 +292,7 @@ export async function listFiles(): Promise<{
 
     // Obtener archivos globales desde /global/
     const globalPath = 'global/';
+    logger.debug({ globalPath }, '[Server Action] listFiles: Listando archivos globales');
     const { data: globalData, error: globalError } = await supabaseAdmin.storage
       .from('documents')
       .list(globalPath, {
@@ -252,6 +300,14 @@ export async function listFiles(): Promise<{
         offset: 0,
         sortBy: { column: 'created_at', order: 'desc' },
       });
+
+    if (globalError) {
+      logger.error(
+        { error: globalError, message: globalError.message },
+        '[Server Action] Error listando archivos globales',
+      );
+      // No fallar completamente si hay error con archivos globales
+    }
 
     const globalFiles: FileItem[] = globalError
       ? []
@@ -270,8 +326,21 @@ export async function listFiles(): Promise<{
           };
         });
 
+    logger.debug(
+      { userFilesCount: userFiles.length, globalFilesCount: globalFiles.length },
+      '[Server Action] listFiles: Éxito',
+    );
+
     return { success: true, userFiles, globalFiles };
   } catch (error) {
+    logger.error(
+      {
+        error,
+        message: error instanceof Error ? error.message : 'Error desconocido',
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+      '[Server Action] Exception listando archivos',
+    );
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error desconocido',

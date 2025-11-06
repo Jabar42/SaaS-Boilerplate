@@ -69,13 +69,13 @@ const SidebarContent = ({ menu, isCollapsed = false, isMobile = false }: Sidebar
 
   // Map menu items to icons
   const getIconForHref = (href: string) => {
-    if (href.includes('/dashboard') && !href.includes('/organization-profile') && !href.includes('/user-profile') && !href.includes('/chat') && !href.includes('/usuarios') && !href.includes('/documentos')) {
+    if (href.includes('/dashboard') && !href.includes('/organization-profile') && !href.includes('/user-profile') && !href.includes('/chat') && !href.includes('/pacientes') && !href.includes('/documentos')) {
       return <HomeIcon />;
     }
     if (href.includes('/chat')) {
       return <ChatIcon />;
     }
-    if (href.includes('/usuarios')) {
+    if (href.includes('/pacientes')) {
       return <UsersIcon />;
     }
     if (href.includes('/documentos')) {

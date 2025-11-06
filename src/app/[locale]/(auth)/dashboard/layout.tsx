@@ -31,8 +31,8 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             label: t('chat'),
           },
           {
-            href: '/dashboard/usuarios',
-            label: t('usuarios'),
+            href: '/dashboard/pacientes',
+            label: t('pacientes'),
           },
           {
             href: '/dashboard/documentos',

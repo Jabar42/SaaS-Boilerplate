@@ -90,7 +90,7 @@
   "DashboardLayout": {
     "home": "Home",
     "chat": "Chat",
-    "usuarios": "Users",
+    "pacientes": "Patients",
     "documentos": "Documents",
     "todos": "Todos",
     "members": "Members",
@@ -125,12 +125,12 @@
     "message_state_description": "You can customize this page by editing the file at <code>dashboard/chat/page.tsx</code>",
     "message_state_alternative": "Chat functionality will be implemented here."
   },
-  "Usuarios": {
-    "title_bar": "Users",
-    "title_bar_description": "Manage your users and permissions",
-    "message_state_title": "User Management Coming Soon",
-    "message_state_description": "You can customize this page by editing the file at <code>dashboard/usuarios/page.tsx</code>",
-    "message_state_alternative": "User management functionality will be implemented here."
+  "Pacientes": {
+    "title_bar": "Patients",
+    "title_bar_description": "Manage your patients and permissions",
+    "message_state_title": "Patient Management Coming Soon",
+    "message_state_description": "You can customize this page by editing the file at <code>dashboard/pacientes/page.tsx</code>",
+    "message_state_alternative": "Patient management functionality will be implemented here."
   },
   "Documentos": {
     "title_bar": "Documents",

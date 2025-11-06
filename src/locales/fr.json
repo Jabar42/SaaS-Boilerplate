@@ -90,7 +90,7 @@
   "DashboardLayout": {
     "home": "Accueil",
     "chat": "Chat",
-    "usuarios": "Utilisateurs",
+    "pacientes": "Patients",
     "documentos": "Documents",
     "todos": "Todos",
     "members": "Membres",
@@ -125,12 +125,12 @@
     "message_state_description": "Vous pouvez personnaliser cette page en modifiant le fichier dans <code>dashboard/chat/page.tsx</code>",
     "message_state_alternative": "La fonctionnalité de chat sera implémentée ici."
   },
-  "Usuarios": {
-    "title_bar": "Utilisateurs",
-    "title_bar_description": "Gérez vos utilisateurs et permissions",
-    "message_state_title": "Gestion des utilisateurs à venir",
-    "message_state_description": "Vous pouvez personnaliser cette page en modifiant le fichier dans <code>dashboard/usuarios/page.tsx</code>",
-    "message_state_alternative": "La fonctionnalité de gestion des utilisateurs sera implémentée ici."
+  "Pacientes": {
+    "title_bar": "Patients",
+    "title_bar_description": "Gérez vos patients et permissions",
+    "message_state_title": "Gestion des patients à venir",
+    "message_state_description": "Vous pouvez personnaliser cette page en modifiant le fichier dans <code>dashboard/pacientes/page.tsx</code>",
+    "message_state_alternative": "La fonctionnalité de gestion des patients sera implémentée ici."
   },
   "Documentos": {
     "title_bar": "Documents",

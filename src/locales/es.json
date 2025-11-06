@@ -90,7 +90,7 @@
   "DashboardLayout": {
     "home": "Inicio",
     "chat": "Chat",
-    "usuarios": "Usuarios",
+    "pacientes": "Pacientes",
     "documentos": "Documentos",
     "todos": "Tareas",
     "members": "Miembros",
@@ -125,12 +125,12 @@
     "message_state_description": "Puedes personalizar esta página editando el archivo en <code>dashboard/chat/page.tsx</code>",
     "message_state_alternative": "La funcionalidad de chat se implementará aquí."
   },
-  "Usuarios": {
-    "title_bar": "Usuarios",
-    "title_bar_description": "Gestiona tus usuarios y permisos",
-    "message_state_title": "Gestión de Usuarios Próximamente",
-    "message_state_description": "Puedes personalizar esta página editando el archivo en <code>dashboard/usuarios/page.tsx</code>",
-    "message_state_alternative": "La funcionalidad de gestión de usuarios se implementará aquí."
+  "Pacientes": {
+    "title_bar": "Pacientes",
+    "title_bar_description": "Gestiona tus pacientes y permisos",
+    "message_state_title": "Gestión de Pacientes Próximamente",
+    "message_state_description": "Puedes personalizar esta página editando el archivo en <code>dashboard/pacientes/page.tsx</code>",
+    "message_state_alternative": "La funcionalidad de gestión de pacientes se implementará aquí."
   },
   "Documentos": {
     "title_bar": "Documentos",

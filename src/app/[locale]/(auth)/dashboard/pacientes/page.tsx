@@ -3,8 +3,8 @@ import { useTranslations } from 'next-intl';
 import { MessageState } from '@/features/dashboard/MessageState';
 import { TitleBar } from '@/features/dashboard/TitleBar';
 
-const UsuariosPage = () => {
-  const t = useTranslations('Usuarios');
+const PacientesPage = () => {
+  const t = useTranslations('Pacientes');
 
   return (
     <>
@@ -44,4 +44,4 @@ const UsuariosPage = () => {
   );
 };
 
-export default UsuariosPage;
+export default PacientesPage;

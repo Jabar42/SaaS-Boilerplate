@@ -24,6 +24,7 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
   const {
     selectedDocuments,
     toggleDocument,
+    setSelectedDocuments,
   } = useSelectedDocuments();
   const { userFiles } = useFiles();
 
@@ -37,6 +38,17 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
     () => selectedDocuments.filter(path => availableFilePaths.has(path)),
     [selectedDocuments, availableFilePaths],
   );
+
+  // Limpiar automáticamente documentos inválidos del estado y localStorage
+  useEffect(() => {
+    // Solo limpiar si hay documentos inválidos (cuando selectedDocuments tiene más que validSelectedDocuments)
+    // Esto ocurre cuando hay documentos en localStorage que ya no existen en la lista de archivos
+    if (selectedDocuments.length > validSelectedDocuments.length) {
+      // Hay documentos inválidos, limpiarlos del estado (esto también actualizará localStorage)
+      setSelectedDocuments(validSelectedDocuments);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableFilePaths.size, selectedDocuments.length, validSelectedDocuments.length]);
 
   // Usar ref para mantener los documentos actuales en el body
   const documentsRef = useRef<string[]>(validSelectedDocuments);

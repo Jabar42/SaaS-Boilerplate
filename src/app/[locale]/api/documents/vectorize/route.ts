@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       .createSignedUrl(filePath, 3600);
 
     if (urlError || !fileData?.signedUrl) {
-      logger.error(
+      logger?.error(
         { error: urlError, filePath },
         'Error getting signed URL from Supabase Storage',
       );
@@ -110,8 +110,22 @@ export async function POST(req: NextRequest) {
       || fileInfo?.[0]?.metadata?.mimetype
       || 'application/pdf';
 
-    // 3. Procesar documento (extraer texto, chunking, embeddings)
-    logger.info({ filePath, fileType }, 'Starting document vectorization');
+    // 3. Verificar que OPENAI_API_KEY esté configurada antes de procesar
+    if (!process.env.OPENAI_API_KEY) {
+      logger?.error('OPENAI_API_KEY no está configurada');
+      return NextResponse.json(
+        {
+          error: 'OPENAI_API_KEY no está configurada. Esta variable es requerida para generar embeddings.',
+          details: process.env.NODE_ENV === 'development'
+            ? 'Configura OPENAI_API_KEY en las variables de entorno de Vercel.'
+            : undefined,
+        },
+        { status: 500 },
+      );
+    }
+
+    // 4. Procesar documento (extraer texto, chunking, embeddings)
+    logger?.info({ filePath, fileType }, 'Starting document vectorization');
     let chunks;
     try {
       // Importación dinámica para evitar análisis durante el build
@@ -122,32 +136,49 @@ export async function POST(req: NextRequest) {
       );
       chunks = result.chunks;
     } catch (processError) {
-      logger.error(
+      const errorMessage = processError instanceof Error
+        ? processError.message
+        : String(processError);
+      const errorStack = processError instanceof Error
+        ? processError.stack
+        : undefined;
+
+      logger?.error(
         {
           error: processError,
-          errorMessage: processError instanceof Error ? processError.message : String(processError),
-          errorStack: processError instanceof Error ? processError.stack : undefined,
+          errorMessage,
+          errorStack,
           filePath,
           fileType,
         },
         'Error processing document for vectorization',
       );
+
+      // Mensajes de error más específicos
+      let userFriendlyError = 'Error al procesar el documento';
+      if (errorMessage.includes('OPENAI_API_KEY')) {
+        userFriendlyError = 'OPENAI_API_KEY no está configurada correctamente';
+      } else if (errorMessage.includes('descargar')) {
+        userFriendlyError = 'Error al descargar el archivo desde Supabase Storage';
+      } else if (errorMessage.includes('texto extraíble')) {
+        userFriendlyError = 'El documento no contiene texto que pueda ser procesado';
+      }
+
       return NextResponse.json(
         {
-          error: processError instanceof Error
-            ? processError.message
-            : 'Error al procesar el documento',
+          error: userFriendlyError,
+          details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
         },
         { status: 500 },
       );
     }
 
-    logger.info(
+    logger?.info(
       { filePath, chunksCount: chunks.length },
       'Document processed, generating embeddings',
     );
 
-    // 4. Preparar chunks con metadata para insertar en vector store
+    // 5. Preparar chunks con metadata para insertar en vector store
     // filePath ya está validado arriba, así que es seguro usarlo como string
     const validatedFilePath = filePath as string;
     const chunksWithMetadata = chunks.map((chunk, index) => ({
@@ -163,8 +194,8 @@ export async function POST(req: NextRequest) {
       },
     }));
 
-    // 5. Insertar en tabla documents (esquema de n8n)
-    logger.info(
+    // 6. Insertar en tabla documents (esquema de n8n)
+    logger?.info(
       { filePath, chunksToInsert: chunksWithMetadata.length },
       'Starting insertion of chunks into vector store',
     );
@@ -175,28 +206,43 @@ export async function POST(req: NextRequest) {
       const { insertDocumentChunks } = await import('@/features/documents/utils/vector-store');
       insertResult = await insertDocumentChunks(chunksWithMetadata);
     } catch (insertError) {
-      logger.error(
+      const errorMessage = insertError instanceof Error
+        ? insertError.message
+        : String(insertError);
+      const errorStack = insertError instanceof Error
+        ? insertError.stack
+        : undefined;
+
+      logger?.error(
         {
           error: insertError,
-          errorMessage: insertError instanceof Error ? insertError.message : String(insertError),
-          errorStack: insertError instanceof Error ? insertError.stack : undefined,
+          errorMessage,
+          errorStack,
           filePath,
           chunksCount: chunksWithMetadata.length,
         },
         'Error calling insertDocumentChunks',
       );
+
+      // Mensajes de error más específicos para problemas de base de datos
+      let userFriendlyError = 'Error al insertar chunks en la base de datos';
+      if (errorMessage.includes('vector') || errorMessage.includes('pgvector')) {
+        userFriendlyError = 'Error con la extensión pgvector. Verifica que esté instalada en la base de datos.';
+      } else if (errorMessage.includes('connection') || errorMessage.includes('DATABASE_URL')) {
+        userFriendlyError = 'Error de conexión con la base de datos. Verifica DATABASE_URL.';
+      }
+
       return NextResponse.json(
         {
-          error: insertError instanceof Error
-            ? insertError.message
-            : 'Error al insertar chunks en la base de datos',
+          error: userFriendlyError,
+          details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
         },
         { status: 500 },
       );
     }
 
     if (!insertResult.success) {
-      logger.error(
+      logger?.error(
         {
           error: insertResult.error,
           filePath,
@@ -215,7 +261,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    logger.info(
+    logger?.info(
       {
         filePath,
         chunksCount: insertResult.insertedCount,

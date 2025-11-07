@@ -10,6 +10,9 @@ import { getSupabaseAdmin } from '@/libs/SupabaseAdmin';
 // Configuración para evitar que Next.js intente pre-renderizar esta ruta
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const dynamicParams = true;
+// Evitar que Next.js intente analizar esta ruta durante el build
+export const revalidate = 0;
 
 export async function POST(req: NextRequest) {
   try {

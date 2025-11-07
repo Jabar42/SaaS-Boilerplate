@@ -1,5 +1,10 @@
-import { db } from '@/libs/DB';
 import { logger } from '@/libs/Logger';
+
+// Función helper para obtener db dinámicamente y evitar problemas en el build
+async function getDb() {
+  const { db } = await import('@/libs/DB');
+  return db;
+}
 
 export type DocumentChunkMetadata = {
   filePath: string;
@@ -29,6 +34,8 @@ export async function insertDocumentChunks(
     // Insertar uno por uno para mayor compatibilidad con pgvector
     // pgvector puede ser sensible al formato del array
     const insertedIds: bigint[] = [];
+
+    const db = await getDb();
 
     for (const chunk of chunks) {
       try {
@@ -98,6 +105,7 @@ export async function deleteDocumentChunksByFilePath(
   filePath: string,
 ): Promise<{ success: boolean; deletedCount?: number; error?: string }> {
   try {
+    const db = await getDb();
     const result = await db.$executeRawUnsafe(
       `DELETE FROM public.documents WHERE metadata->>'filePath' = $1`,
       filePath,
@@ -124,6 +132,7 @@ export async function checkDocumentVectorized(
   organizationId: string,
 ): Promise<{ isVectorized: boolean; chunksCount?: number }> {
   try {
+    const db = await getDb();
     const result = await db.$queryRawUnsafe<Array<{ count: bigint }>>(
       `SELECT COUNT(*) as count 
        FROM public.documents 

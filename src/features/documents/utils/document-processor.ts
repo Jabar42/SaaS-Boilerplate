@@ -3,8 +3,10 @@ import { Buffer } from 'node:buffer';
 import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { embedMany } from 'ai';
-// @ts-expect-error - pdf-parse doesn't have proper ESM types
-import pdf from 'pdf-parse';
+
+// pdf-parse es CommonJS, necesitamos importarlo dinámicamente
+// eslint-disable-next-line ts/no-require-imports
+const pdfParse = require('pdf-parse');
 
 /**
  * Procesa un documento para vectorización:
@@ -35,7 +37,7 @@ export async function processDocumentForVectorization(
     }
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const data = await pdf(buffer);
+    const data = await pdfParse(buffer);
     text = data.text;
   } else if (
     fileType === 'text/plain'

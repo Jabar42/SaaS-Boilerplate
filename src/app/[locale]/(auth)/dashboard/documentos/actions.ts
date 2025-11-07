@@ -1,52 +1,10 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import type { FileItem } from '@/features/documents/types/file.types';
-import { Env } from '@/libs/Env';
 import { logger } from '@/libs/Logger';
-
-// Singleton para el cliente de administrador (mejor performance)
-let supabaseAdminInstance: SupabaseClient | null = null;
-
-// Función helper para obtener el cliente de Supabase con Service Role Key
-// ⚠️ NUNCA exponer este key en el cliente
-export function getSupabaseAdmin(): SupabaseClient {
-  // Reutilizar instancia si ya existe
-  if (supabaseAdminInstance) {
-    return supabaseAdminInstance;
-  }
-
-  const supabaseUrl = Env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = Env.SUPABASE_SERVICE_ROLE_KEY;
-
-  // Validación estricta - fallar de forma clara si faltan variables
-  if (!supabaseUrl) {
-    throw new Error(
-      '[Server Action] NEXT_PUBLIC_SUPABASE_URL no está configurado. '
-      + 'Esta variable es requerida para operaciones con Supabase Storage.',
-    );
-  }
-
-  if (!serviceRoleKey) {
-    throw new Error(
-      '[Server Action] SUPABASE_SERVICE_ROLE_KEY no está configurado. '
-      + 'Esta key es necesaria para operaciones de administrador en Supabase Storage. '
-      + 'Configúrala en las variables de entorno de producción.',
-    );
-  }
-
-  // Crear y cachear la instancia
-  supabaseAdminInstance = createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-
-  return supabaseAdminInstance;
-}
+import { getSupabaseAdmin } from '@/libs/SupabaseAdmin';
 
 export async function uploadFile(
   formData: FormData,

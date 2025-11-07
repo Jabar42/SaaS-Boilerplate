@@ -32,25 +32,46 @@ export async function insertDocumentChunks(
 
     for (const chunk of chunks) {
       try {
-        // Formato del embedding para pgvector: pasar como array de PostgreSQL
-        // pgvector espera el formato: '{0.123,0.456,...}' o usar casting directo
-        const embeddingArray = `{${chunk.embedding.join(',')}}`;
-
-        const result = await db.$queryRawUnsafe<Array<{ id: bigint }>>(
-          `INSERT INTO public.documents (content, metadata, embedding)
-           VALUES ($1::text, $2::jsonb, $3::vector)
-           RETURNING id`,
-          chunk.content,
-          JSON.stringify(chunk.metadata),
-          embeddingArray,
-        );
+        // pgvector acepta arrays directamente, pero también podemos usar formato de string
+        // Intentar primero con el array directamente
+        let result;
+        try {
+          // Opción 1: Pasar array directamente (puede funcionar con Prisma)
+          result = await db.$queryRawUnsafe<Array<{ id: bigint }>>(
+            `INSERT INTO public.documents (content, metadata, embedding)
+             VALUES ($1::text, $2::jsonb, $3::vector)
+             RETURNING id`,
+            chunk.content,
+            JSON.stringify(chunk.metadata),
+            chunk.embedding,
+          );
+        } catch {
+          // Opción 2: Si falla, usar formato de array de PostgreSQL
+          const embeddingString = `[${chunk.embedding.join(',')}]`;
+          result = await db.$queryRawUnsafe<Array<{ id: bigint }>>(
+            `INSERT INTO public.documents (content, metadata, embedding)
+             VALUES ($1::text, $2::jsonb, $3::vector)
+             RETURNING id`,
+            chunk.content,
+            JSON.stringify(chunk.metadata),
+            embeddingString,
+          );
+        }
 
         if (Array.isArray(result) && result.length > 0 && result[0]) {
           insertedIds.push(result[0].id);
         }
       } catch (error) {
         logger.error(
-          { error, chunkIndex: chunk.metadata.chunkIndex, filePath: chunk.metadata.filePath },
+          {
+            error,
+            errorMessage: error instanceof Error ? error.message : String(error),
+            errorStack: error instanceof Error ? error.stack : undefined,
+            chunkIndex: chunk.metadata.chunkIndex,
+            filePath: chunk.metadata.filePath,
+            embeddingLength: chunk.embedding.length,
+            embeddingSample: chunk.embedding.slice(0, 3), // Primeros 3 valores para debug
+          },
           'Error inserting individual chunk',
         );
         // Continuar con los siguientes chunks aunque uno falle

@@ -2,10 +2,10 @@ import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { getSupabaseAdmin } from '@/app/[locale]/(auth)/dashboard/documentos/actions';
 import { processDocumentForVectorization } from '@/features/documents/utils/document-processor';
 import { insertDocumentChunks } from '@/features/documents/utils/vector-store';
 import { logger } from '@/libs/Logger';
+import { getSupabaseAdmin } from '@/libs/SupabaseAdmin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -60,10 +60,33 @@ export async function POST(req: NextRequest) {
 
     // 3. Procesar documento (extraer texto, chunking, embeddings)
     logger.info({ filePath, fileType }, 'Starting document vectorization');
-    const { chunks } = await processDocumentForVectorization(
-      fileData.signedUrl,
-      fileType,
-    );
+    let chunks;
+    try {
+      const result = await processDocumentForVectorization(
+        fileData.signedUrl,
+        fileType,
+      );
+      chunks = result.chunks;
+    } catch (processError) {
+      logger.error(
+        {
+          error: processError,
+          errorMessage: processError instanceof Error ? processError.message : String(processError),
+          errorStack: processError instanceof Error ? processError.stack : undefined,
+          filePath,
+          fileType,
+        },
+        'Error processing document for vectorization',
+      );
+      return NextResponse.json(
+        {
+          error: processError instanceof Error
+            ? processError.message
+            : 'Error al procesar el documento',
+        },
+        { status: 500 },
+      );
+    }
 
     logger.info(
       { filePath, chunksCount: chunks.length },
@@ -112,10 +135,25 @@ export async function POST(req: NextRequest) {
       chunksCount: insertResult.insertedCount || chunks.length,
     });
   } catch (error) {
-    logger.error({ error }, 'Error in vectorize API route');
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    const errorName = error instanceof Error ? error.name : 'UnknownError';
+
+    logger.error(
+      {
+        error,
+        errorMessage,
+        errorStack,
+        errorName,
+        filePath: (error as any)?.filePath,
+      },
+      'Error in vectorize API route',
+    );
+
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage || 'Unknown error',
+        details: process.env.NODE_ENV === 'development' ? errorStack : undefined,
       },
       { status: 500 },
     );

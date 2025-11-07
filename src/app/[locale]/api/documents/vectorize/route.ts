@@ -115,15 +115,51 @@ export async function POST(req: NextRequest) {
     }));
 
     // 5. Insertar en tabla documents (esquema de n8n)
-    const insertResult = await insertDocumentChunks(chunksWithMetadata);
+    logger.info(
+      { filePath, chunksToInsert: chunksWithMetadata.length },
+      'Starting insertion of chunks into vector store',
+    );
+
+    let insertResult;
+    try {
+      insertResult = await insertDocumentChunks(chunksWithMetadata);
+    } catch (insertError) {
+      logger.error(
+        {
+          error: insertError,
+          errorMessage: insertError instanceof Error ? insertError.message : String(insertError),
+          errorStack: insertError instanceof Error ? insertError.stack : undefined,
+          filePath,
+          chunksCount: chunksWithMetadata.length,
+        },
+        'Error calling insertDocumentChunks',
+      );
+      return NextResponse.json(
+        {
+          error: insertError instanceof Error
+            ? insertError.message
+            : 'Error al insertar chunks en la base de datos',
+        },
+        { status: 500 },
+      );
+    }
 
     if (!insertResult.success) {
       logger.error(
-        { error: insertResult.error, filePath },
+        {
+          error: insertResult.error,
+          filePath,
+          chunksCount: chunksWithMetadata.length,
+        },
         'Error inserting chunks into vector store',
       );
       return NextResponse.json(
-        { error: insertResult.error || 'Error al insertar chunks' },
+        {
+          error: insertResult.error || 'Error al insertar chunks',
+          details: process.env.NODE_ENV === 'development'
+            ? `Failed to insert ${chunksWithMetadata.length} chunks`
+            : undefined,
+        },
         { status: 500 },
       );
     }

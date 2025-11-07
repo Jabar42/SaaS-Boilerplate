@@ -4,10 +4,6 @@ import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { embedMany } from 'ai';
 
-// pdf-parse es CommonJS, necesitamos importarlo dinámicamente
-// eslint-disable-next-line ts/no-require-imports
-const pdfParse = require('pdf-parse');
-
 /**
  * Procesa un documento para vectorización:
  * 1. Extrae texto según el tipo de archivo
@@ -37,6 +33,10 @@ export async function processDocumentForVectorization(
     }
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    // Importación dinámica de pdf-parse para evitar problemas en el build
+    // pdf-parse es CommonJS, necesitamos usar require en runtime
+    // eslint-disable-next-line ts/no-require-imports
+    const pdfParse = require('pdf-parse');
     const data = await pdfParse(buffer);
     text = data.text;
   } else if (

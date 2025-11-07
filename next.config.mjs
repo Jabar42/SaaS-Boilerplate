@@ -23,7 +23,7 @@ export default bundleAnalyzer(
     poweredByHeader: false,
     reactStrictMode: true,
     experimental: {
-      serverComponentsExternalPackages: ['@electric-sql/pglite'],
+      serverComponentsExternalPackages: ['@electric-sql/pglite', 'pdf-parse'],
     },
     // Configurar límite de tamaño para Server Actions (50MB)
     serverActions: {

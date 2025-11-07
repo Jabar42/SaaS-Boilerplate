@@ -7,6 +7,10 @@ import { insertDocumentChunks } from '@/features/documents/utils/vector-store';
 import { logger } from '@/libs/Logger';
 import { getSupabaseAdmin } from '@/libs/SupabaseAdmin';
 
+// Configuración para evitar que Next.js intente pre-renderizar esta ruta
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(req: NextRequest) {
   try {
     const { userId, orgId } = await auth();

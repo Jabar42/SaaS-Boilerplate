@@ -98,11 +98,11 @@ describe('POST /api/documents/vectorize', () => {
       chunks: [
         {
           content: 'Test chunk content 1',
-          embedding: Array.from({ length: 1536 }).fill(0.1),
+          embedding: Array.from({ length: 1536 }, () => 0.1) as number[],
         },
         {
           content: 'Test chunk content 2',
-          embedding: Array.from({ length: 1536 }).fill(0.2),
+          embedding: Array.from({ length: 1536 }, () => 0.2) as number[],
         },
       ],
     });

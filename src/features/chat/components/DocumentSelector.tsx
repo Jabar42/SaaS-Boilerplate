@@ -92,8 +92,8 @@ export function DocumentSelector({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="bottom"
-        className="flex h-[60vh] flex-col sm:max-w-none md:h-[70vh] md:max-w-md"
+        side="right"
+        className="flex h-full flex-col rounded-l-lg sm:max-w-md"
       >
         <SheetHeader>
           <SheetTitle>{t('manage_documents')}</SheetTitle>
@@ -163,28 +163,37 @@ export function DocumentSelector({
                   item => item.fileName === file.name,
                 );
 
+                const handleToggle = (e?: React.MouseEvent | React.KeyboardEvent) => {
+                  if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                  if (!isUploading) {
+                    onToggleDocument(file.path);
+                  }
+                };
+
                 return (
                   <div
                     key={file.path}
                     role="button"
                     tabIndex={0}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all hover:shadow-sm ${
                       isSelected
-                        ? 'border-primary bg-primary/10'
-                        : 'hover:bg-muted/50'
+                        ? 'border-primary bg-primary/10 shadow-sm'
+                        : 'border-border hover:border-primary/50 hover:bg-muted/50'
                     }`}
-                    onClick={() => !isUploading && onToggleDocument(file.path)}
+                    onClick={handleToggle}
                     onKeyDown={(e) => {
                       if ((e.key === 'Enter' || e.key === ' ') && !isUploading) {
-                        e.preventDefault();
-                        onToggleDocument(file.path);
+                        handleToggle(e);
                       }
                     }}
                   >
                     <DocumentCheckbox
                       checked={isSelected}
                       loading={isUploading}
-                      onToggle={() => !isUploading && onToggleDocument(file.path)}
+                      onToggle={handleToggle}
                     />
 
                     <div className="min-w-0 flex-1">
@@ -215,7 +224,7 @@ export function DocumentSelector({
                 .map(fileName => (
                   <div
                     key={fileName}
-                    className="flex items-center gap-3 rounded-lg border bg-muted/50 p-3"
+                    className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 p-3"
                   >
                     <Loader2 className="size-4 animate-spin text-muted-foreground" />
                     <div className="min-w-0 flex-1">

@@ -7,7 +7,7 @@ import { cn } from '@/utils/Helpers';
 type DocumentCheckboxProps = {
   checked: boolean;
   loading?: boolean;
-  onToggle: () => void;
+  onToggle: (e?: React.MouseEvent | React.KeyboardEvent) => void;
   className?: string;
 };
 
@@ -20,7 +20,10 @@ export function DocumentCheckbox({
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle(e);
+      }}
       disabled={loading}
       className={cn(
         'cursor-pointer transition-colors',

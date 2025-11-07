@@ -11,6 +11,7 @@ import { useSelectedDocuments } from '../hooks/useSelectedDocuments';
 import { ChatInput } from './ChatInput';
 import { DocumentSelector } from './DocumentSelector';
 import { MessageBubble } from './MessageBubble';
+import { MessageSuggestions } from './MessageSuggestions';
 
 type ChatWindowProps = {
   apiEndpoint?: string;
@@ -93,11 +94,14 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
 
         {messages.length === 0 && (
           <div className="flex h-full items-center justify-center text-center text-muted-foreground">
-            <div>
-              <p className="text-lg font-medium">Start a conversation</p>
-              <p className="mt-2 text-sm">
-                Send a message to begin chatting with the AI assistant.
-              </p>
+            <div className="flex flex-col items-center gap-4">
+              <div>
+                <p className="text-lg font-medium">Start a conversation</p>
+                <p className="mt-2 text-sm">
+                  Send a message to begin chatting with the AI assistant.
+                </p>
+              </div>
+              <MessageSuggestions onSuggestionClick={handleSend} />
             </div>
           </div>
         )}

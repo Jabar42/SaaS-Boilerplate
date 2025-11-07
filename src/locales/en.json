@@ -136,7 +136,14 @@
     "upload_success_title": "File uploaded",
     "upload_success_description": "File uploaded successfully",
     "upload_error_title": "Upload error",
-    "upload_error_description": "Failed to upload file"
+    "upload_error_description": "Failed to upload file",
+    "suggestions_title": "Suggestions to get started:",
+    "suggestions": [
+      "Paciente canino macho, 8 años, raza Cocker Spaniel. Presenta poliuria, polidipsia y pérdida de peso progresiva. Glucemia: 420 mg/dL. Cetonuria positiva. Solicito orientación sobre diagnóstico diferencial y manejo inicial.",
+      "Gato europeo, 6 años, presenta convulsiones tónico-clónicas recurrentes desde hace 48 horas. No hay antecedentes de trauma. Hemograma y bioquímica normales. Solicito orientación sobre diagnóstico diferencial y manejo inicial.",
+      "Canino mestizo, 4 años, presenta vómitos intermitentes y heces con estrías de sangre fresca. Se alimenta con dieta casera rica en grasas. Solicito enfoque diagnóstico y protocolo terapéutico inicial.",
+      "Pastor Alemán, macho, 10 años. Presenta disnea aguda, tos productiva y mucosas cianóticas. Radiografía torácica con patrón alveolar difuso y cardiomegalia. Solicito diagnóstico probable y estabilización inicial."
+    ]
   },
   "Pacientes": {
     "title_bar": "Patients",

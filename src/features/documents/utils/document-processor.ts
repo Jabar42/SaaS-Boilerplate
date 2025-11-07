@@ -1,8 +1,7 @@
 import { Buffer } from 'node:buffer';
 
-import { openai } from '@ai-sdk/openai';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { embedMany } from 'ai';
+// Importaciones dinámicas para evitar problemas en el build
+// Estas dependencias solo se cargarán cuando se necesiten
 
 /**
  * Procesa un documento para vectorización:
@@ -58,6 +57,8 @@ export async function processDocumentForVectorization(
   }
 
   // 2. Dividir en chunks
+  // Importación dinámica para evitar problemas en el build
+  const { RecursiveCharacterTextSplitter } = await import('@langchain/textsplitters');
   const textSplitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
     chunkOverlap: 200,
@@ -70,9 +71,12 @@ export async function processDocumentForVectorization(
   }
 
   // 3. Generar embeddings en batch
+  // Importaciones dinámicas para evitar problemas en el build
+  const { embedMany } = await import('ai');
+  const { openai } = await import('@ai-sdk/openai');
   const { embeddings } = await embedMany({
     model: openai.embedding('text-embedding-3-small'),
-    values: chunkedContent.map(chunk => chunk.pageContent),
+    values: chunkedContent.map((chunk: { pageContent: string }) => chunk.pageContent),
   });
 
   if (embeddings.length !== chunkedContent.length) {
@@ -83,7 +87,7 @@ export async function processDocumentForVectorization(
 
   // 4. Retornar chunks con embeddings
   return {
-    chunks: chunkedContent.map((chunk, i) => {
+    chunks: chunkedContent.map((chunk: { pageContent: string }, i: number) => {
       const embedding = embeddings[i];
       if (!embedding) {
         throw new Error(`No embedding generated for chunk ${i}`);

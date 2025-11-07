@@ -123,7 +123,20 @@
     "title_bar_description": "Comunícate con tu equipo",
     "message_state_title": "Chat Próximamente",
     "message_state_description": "Puedes personalizar esta página editando el archivo en <code>dashboard/chat/page.tsx</code>",
-    "message_state_alternative": "La funcionalidad de chat se implementará aquí."
+    "message_state_alternative": "La funcionalidad de chat se implementará aquí.",
+    "select_documents": "Seleccionar documentos",
+    "select_documents_description": "Selecciona documentos para incluir en tu consulta",
+    "no_documents_selected": "No hay documentos seleccionados",
+    "documents_selected": "{count} documento(s) seleccionado(s)",
+    "manage_documents": "Gestionar documentos",
+    "upload_document": "Subir documento",
+    "no_files_available": "No hay archivos disponibles",
+    "uploading": "Subiendo",
+    "close": "Cerrar",
+    "upload_success_title": "Archivo subido",
+    "upload_success_description": "El archivo se subió correctamente",
+    "upload_error_title": "Error al subir",
+    "upload_error_description": "No se pudo subir el archivo"
   },
   "Pacientes": {
     "title_bar": "Pacientes",

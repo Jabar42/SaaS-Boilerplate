@@ -12,7 +12,7 @@ let supabaseAdminInstance: SupabaseClient | null = null;
 
 // Función helper para obtener el cliente de Supabase con Service Role Key
 // ⚠️ NUNCA exponer este key en el cliente
-function getSupabaseAdmin(): SupabaseClient {
+export function getSupabaseAdmin(): SupabaseClient {
   // Reutilizar instancia si ya existe
   if (supabaseAdminInstance) {
     return supabaseAdminInstance;
@@ -183,6 +183,28 @@ export async function deleteFile(
 
     if (error) {
       return { success: false, error: error.message };
+    }
+
+    // Eliminar chunks del vector store
+    // No bloquear la eliminación si falla la limpieza de chunks
+    try {
+      const { deleteDocumentChunksByFilePath } = await import(
+        '@/features/documents/utils/vector-store'
+      );
+      const deleteResult = await deleteDocumentChunksByFilePath(filePath);
+
+      if (!deleteResult.success) {
+        logger.warn(
+          { error: deleteResult.error, filePath },
+          'Error al eliminar chunks del vector store (archivo ya eliminado)',
+        );
+      }
+    } catch (chunkError) {
+      logger.warn(
+        { error: chunkError, filePath },
+        'Error al eliminar chunks del vector store (archivo ya eliminado)',
+      );
+      // Continuar aunque falle la limpieza de chunks
     }
 
     return { success: true };

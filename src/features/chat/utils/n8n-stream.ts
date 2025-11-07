@@ -9,25 +9,31 @@ type UserData = {
   sessionId: string | null;
 };
 
+type N8nPayload = {
+  prompt: string;
+  documents?: string[];
+  user: UserData;
+};
+
 export async function createN8nStream(
-  prompt: string,
+  payload: N8nPayload,
   endpoint: string,
-  userData: UserData,
 ) {
   // Construir URL con chatInput como query parameter
   const url = new URL(endpoint);
-  url.searchParams.set('chatInput', prompt);
+  url.searchParams.set('chatInput', payload.prompt);
 
-  // Preparar body con datos del usuario
+  // Preparar body con datos del usuario y documentos
   const requestBody = {
     user: {
-      id: userData.userId,
-      email: userData.email,
-      firstName: userData.firstName,
-      orgId: userData.orgId,
-      orgRole: userData.orgRole,
-      sessionId: userData.sessionId,
+      id: payload.user.userId,
+      email: payload.user.email,
+      firstName: payload.user.firstName,
+      orgId: payload.user.orgId,
+      orgRole: payload.user.orgRole,
+      sessionId: payload.user.sessionId,
     },
+    documents: payload.documents || [],
   };
 
   // Hacer POST al webhook de n8n con datos del usuario

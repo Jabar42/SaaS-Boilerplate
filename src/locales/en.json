@@ -123,7 +123,20 @@
     "title_bar_description": "Communicate with your team",
     "message_state_title": "Chat Coming Soon",
     "message_state_description": "You can customize this page by editing the file at <code>dashboard/chat/page.tsx</code>",
-    "message_state_alternative": "Chat functionality will be implemented here."
+    "message_state_alternative": "Chat functionality will be implemented here.",
+    "select_documents": "Select documents",
+    "select_documents_description": "Select documents to include in your query",
+    "no_documents_selected": "No documents selected",
+    "documents_selected": "{count} document(s) selected",
+    "manage_documents": "Manage documents",
+    "upload_document": "Upload document",
+    "no_files_available": "No files available",
+    "uploading": "Uploading",
+    "close": "Close",
+    "upload_success_title": "File uploaded",
+    "upload_success_description": "File uploaded successfully",
+    "upload_error_title": "Upload error",
+    "upload_error_description": "Failed to upload file"
   },
   "Pacientes": {
     "title_bar": "Patients",

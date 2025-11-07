@@ -6,10 +6,12 @@ import { useState } from 'react';
 import { uploadFile as uploadFileAction } from '@/app/[locale]/(auth)/dashboard/documentos/actions';
 
 import type { UploadProgress } from '../types/file.types';
+import { useVectorizeTrigger } from './useVectorizeTrigger';
 
 export function useFileUpload() {
   const { user } = useUser();
   const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
+  const { triggerVectorization } = useVectorizeTrigger();
 
   const uploadFile = async (
     file: File,
@@ -113,6 +115,15 @@ export function useFileUpload() {
 
       if (onProgress) {
         onProgress(100);
+      }
+
+      // Trigger vectorización automáticamente después de upload exitoso
+      // No bloquear si falla la vectorización (el archivo ya está subido)
+      if (result.path) {
+        triggerVectorization(result.path).catch((err) => {
+          // Log error pero no bloquear el flujo
+          console.warn('Error al vectorizar documento:', err);
+        });
       }
 
       return { success: true, path: result.path };

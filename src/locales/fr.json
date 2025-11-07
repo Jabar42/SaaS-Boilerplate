@@ -123,7 +123,20 @@
     "title_bar_description": "Communiquez avec votre équipe",
     "message_state_title": "Chat à venir",
     "message_state_description": "Vous pouvez personnaliser cette page en modifiant le fichier dans <code>dashboard/chat/page.tsx</code>",
-    "message_state_alternative": "La fonctionnalité de chat sera implémentée ici."
+    "message_state_alternative": "La fonctionnalité de chat sera implémentée ici.",
+    "select_documents": "Sélectionner des documents",
+    "select_documents_description": "Sélectionnez des documents à inclure dans votre requête",
+    "no_documents_selected": "Aucun document sélectionné",
+    "documents_selected": "{count} document(s) sélectionné(s)",
+    "manage_documents": "Gérer les documents",
+    "upload_document": "Télécharger un document",
+    "no_files_available": "Aucun fichier disponible",
+    "uploading": "Téléchargement",
+    "close": "Fermer",
+    "upload_success_title": "Fichier téléchargé",
+    "upload_success_description": "Fichier téléchargé avec succès",
+    "upload_error_title": "Erreur de téléchargement",
+    "upload_error_description": "Échec du téléchargement du fichier"
   },
   "Pacientes": {
     "title_bar": "Patients",

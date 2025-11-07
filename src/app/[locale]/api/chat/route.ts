@@ -28,11 +28,14 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    const { messages } = body;
+    const { messages, documents } = body;
 
     if (!messages || !Array.isArray(messages)) {
       throw new Error('Messages must be an array');
     }
+
+    // documents es opcional: array de filePaths de documentos seleccionados
+    const documentPaths = documents && Array.isArray(documents) ? documents : [];
 
     // Convert messages to the format expected by the model
     const modelMessages = messages.map((msg: any) => ({
@@ -63,11 +66,14 @@ export async function POST(req: NextRequest) {
       sessionId: sessionId || null,
     };
 
-    // Crear stream directamente desde n8n con datos del usuario
+    // Crear stream directamente desde n8n con datos del usuario y documentos
     const n8nTextStream = await createN8nStream(
-      lastUserMessage,
+      {
+        prompt: lastUserMessage,
+        documents: documentPaths,
+        user: userData,
+      },
       Env.N8N_ENDPOINT,
-      userData,
     );
 
     // Convertir texto en stream de UIMessageChunk para @ai-sdk/react useChat

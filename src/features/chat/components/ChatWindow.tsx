@@ -3,9 +3,11 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, isTextUIPart } from 'ai';
 import { useParams } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import { useSelectedDocuments } from '../hooks/useSelectedDocuments';
 import { ChatInput } from './ChatInput';
+import { DocumentSelector } from './DocumentSelector';
 import { MessageBubble } from './MessageBubble';
 
 type ChatWindowProps = {
@@ -16,11 +18,27 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
   const params = useParams();
   const locale = params?.locale as string | undefined;
   const finalApiEndpoint = apiEndpoint || `/${locale || 'en'}/api/chat`;
+  const [isDocumentSelectorOpen, setIsDocumentSelectorOpen] = useState(false);
+  const {
+    selectedDocuments,
+    toggleDocument,
+  } = useSelectedDocuments();
+
+  // Usar ref para mantener los documentos actuales en el body
+  const documentsRef = useRef<string[]>(selectedDocuments);
+  useEffect(() => {
+    documentsRef.current = selectedDocuments;
+  }, [selectedDocuments]);
+
   const chatHelpers = useChat({
     transport: new DefaultChatTransport({
       api: finalApiEndpoint,
+      body: () => ({
+        documents: documentsRef.current,
+      }),
     }),
   });
+
   const { messages, error, status } = chatHelpers;
   const isLoading = status === 'submitted' || status === 'streaming';
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -28,6 +46,12 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleSend = (text: string) => {
+    chatHelpers.sendMessage({
+      text,
+    });
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -80,9 +104,19 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
 
       {/* Input */}
       <ChatInput
-        onSend={text => chatHelpers.sendMessage({ text })}
+        onSend={handleSend}
         disabled={isLoading}
         placeholder={isLoading ? 'AI is thinking...' : 'Say something...'}
+        onDocumentClick={() => setIsDocumentSelectorOpen(true)}
+        selectedDocumentsCount={selectedDocuments.length}
+      />
+
+      {/* Document Selector */}
+      <DocumentSelector
+        open={isDocumentSelectorOpen}
+        onOpenChange={setIsDocumentSelectorOpen}
+        selectedDocuments={selectedDocuments}
+        onToggleDocument={toggleDocument}
       />
     </div>
   );

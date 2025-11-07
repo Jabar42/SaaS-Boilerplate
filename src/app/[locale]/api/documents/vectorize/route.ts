@@ -2,11 +2,6 @@ import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { processDocumentForVectorization } from '@/features/documents/utils/document-processor';
-import { insertDocumentChunks } from '@/features/documents/utils/vector-store';
-import { logger } from '@/libs/Logger';
-import { getSupabaseAdmin } from '@/libs/SupabaseAdmin';
-
 // Configuración para evitar que Next.js intente pre-renderizar esta ruta
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -14,8 +9,15 @@ export const dynamicParams = true;
 // Evitar que Next.js intente analizar esta ruta durante el build
 export const revalidate = 0;
 
+// Importaciones dinámicas para evitar que Next.js las analice durante el build
+// Estas se cargarán solo en runtime
+
 export async function POST(req: NextRequest) {
   try {
+    // Importaciones dinámicas en runtime para evitar análisis durante el build
+    const { logger } = await import('@/libs/Logger');
+    const { getSupabaseAdmin } = await import('@/libs/SupabaseAdmin');
+
     const { userId, orgId } = await auth();
 
     if (!userId || !orgId) {
@@ -69,6 +71,8 @@ export async function POST(req: NextRequest) {
     logger.info({ filePath, fileType }, 'Starting document vectorization');
     let chunks;
     try {
+      // Importación dinámica para evitar análisis durante el build
+      const { processDocumentForVectorization } = await import('@/features/documents/utils/document-processor');
       const result = await processDocumentForVectorization(
         fileData.signedUrl,
         fileType,
@@ -122,6 +126,8 @@ export async function POST(req: NextRequest) {
 
     let insertResult;
     try {
+      // Importación dinámica para evitar análisis durante el build
+      const { insertDocumentChunks } = await import('@/features/documents/utils/vector-store');
       insertResult = await insertDocumentChunks(chunksWithMetadata);
     } catch (insertError) {
       logger.error(
@@ -182,16 +188,23 @@ export async function POST(req: NextRequest) {
     const errorStack = error instanceof Error ? error.stack : undefined;
     const errorName = error instanceof Error ? error.name : 'UnknownError';
 
-    logger.error(
-      {
-        error,
-        errorMessage,
-        errorStack,
-        errorName,
-        filePath: (error as any)?.filePath,
-      },
-      'Error in vectorize API route',
-    );
+    // Intentar loggear el error si logger está disponible
+    try {
+      const { logger: errorLogger } = await import('@/libs/Logger');
+      errorLogger.error(
+        {
+          error,
+          errorMessage,
+          errorStack,
+          errorName,
+          filePath: (error as any)?.filePath,
+        },
+        'Error in vectorize API route',
+      );
+    } catch {
+      // Si no se puede importar logger, al menos loggear en consola
+      console.error('Error in vectorize API route:', errorMessage, errorStack);
+    }
 
     return NextResponse.json(
       {

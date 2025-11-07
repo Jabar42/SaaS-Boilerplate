@@ -3,7 +3,9 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, isTextUIPart } from 'ai';
 import { useParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { useFiles } from '@/features/documents/hooks/useFiles';
 
 import { useSelectedDocuments } from '../hooks/useSelectedDocuments';
 import { ChatInput } from './ChatInput';
@@ -23,12 +25,24 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
     selectedDocuments,
     toggleDocument,
   } = useSelectedDocuments();
+  const { userFiles } = useFiles();
+
+  // Filtrar documentos seleccionados para incluir solo los que realmente existen
+  const availableFilePaths = useMemo(
+    () => new Set(userFiles.map(file => file.path)),
+    [userFiles],
+  );
+
+  const validSelectedDocuments = useMemo(
+    () => selectedDocuments.filter(path => availableFilePaths.has(path)),
+    [selectedDocuments, availableFilePaths],
+  );
 
   // Usar ref para mantener los documentos actuales en el body
-  const documentsRef = useRef<string[]>(selectedDocuments);
+  const documentsRef = useRef<string[]>(validSelectedDocuments);
   useEffect(() => {
-    documentsRef.current = selectedDocuments;
-  }, [selectedDocuments]);
+    documentsRef.current = validSelectedDocuments;
+  }, [validSelectedDocuments]);
 
   const chatHelpers = useChat({
     transport: new DefaultChatTransport({
@@ -108,14 +122,14 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
         disabled={isLoading}
         placeholder={isLoading ? 'AI is thinking...' : 'Say something...'}
         onDocumentClick={() => setIsDocumentSelectorOpen(true)}
-        selectedDocumentsCount={selectedDocuments.length}
+        selectedDocumentsCount={validSelectedDocuments.length}
       />
 
       {/* Document Selector */}
       <DocumentSelector
         open={isDocumentSelectorOpen}
         onOpenChange={setIsDocumentSelectorOpen}
-        selectedDocuments={selectedDocuments}
+        selectedDocuments={validSelectedDocuments}
         onToggleDocument={toggleDocument}
       />
     </div>

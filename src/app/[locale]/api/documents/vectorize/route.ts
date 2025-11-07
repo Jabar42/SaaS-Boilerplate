@@ -13,32 +13,75 @@ export const revalidate = 0;
 // Estas se cargarán solo en runtime
 
 export async function POST(req: NextRequest) {
+  let logger: any = null;
+  let filePath: string | undefined;
   try {
     // Importaciones dinámicas en runtime para evitar análisis durante el build
-    const { logger } = await import('@/libs/Logger');
+    try {
+      const loggerModule = await import('@/libs/Logger');
+      logger = loggerModule.logger;
+    } catch (loggerError) {
+      // Continuar sin logger, usar console como fallback
+
+      console.error('Error importing logger:', loggerError);
+      logger = {
+        // eslint-disable-next-line no-console
+        info: (...args: any[]) => console.log('[INFO]', ...args),
+
+        error: (...args: any[]) => console.error('[ERROR]', ...args),
+      };
+    }
+
     const { getSupabaseAdmin } = await import('@/libs/SupabaseAdmin');
 
     const { userId, orgId } = await auth();
 
     if (!userId || !orgId) {
+      logger?.error('Unauthorized request - missing userId or orgId');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 },
       );
     }
 
-    const body = await req.json();
-    const { filePath } = body;
+    let body: any;
+    try {
+      body = await req.json();
+      filePath = body?.filePath;
+    } catch (parseError) {
+      logger?.error('Error parsing request body:', parseError);
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 },
+      );
+    }
 
     if (!filePath || typeof filePath !== 'string') {
+      logger?.error('Invalid filePath:', { filePath, type: typeof filePath });
       return NextResponse.json(
         { error: 'filePath is required and must be a string' },
         { status: 400 },
       );
     }
 
+    logger?.info('Starting vectorization for file:', filePath);
+
     // 1. Obtener URL firmada del archivo desde Supabase Storage
-    const supabase = getSupabaseAdmin();
+    let supabase;
+    try {
+      supabase = getSupabaseAdmin();
+    } catch (supabaseError) {
+      logger?.error('Error getting Supabase admin client:', supabaseError);
+      return NextResponse.json(
+        {
+          error: 'Error al inicializar cliente de Supabase',
+          details: process.env.NODE_ENV === 'development'
+            ? (supabaseError instanceof Error ? supabaseError.message : String(supabaseError))
+            : undefined,
+        },
+        { status: 500 },
+      );
+    }
     const { data: fileData, error: urlError } = await supabase.storage
       .from('documents')
       .createSignedUrl(filePath, 3600);
@@ -105,11 +148,13 @@ export async function POST(req: NextRequest) {
     );
 
     // 4. Preparar chunks con metadata para insertar en vector store
+    // filePath ya está validado arriba, así que es seguro usarlo como string
+    const validatedFilePath = filePath as string;
     const chunksWithMetadata = chunks.map((chunk, index) => ({
       content: chunk.content,
       embedding: chunk.embedding,
       metadata: {
-        filePath,
+        filePath: validatedFilePath,
         organizationId: orgId,
         chunkIndex: index,
         fileName,
@@ -188,10 +233,9 @@ export async function POST(req: NextRequest) {
     const errorStack = error instanceof Error ? error.stack : undefined;
     const errorName = error instanceof Error ? error.name : 'UnknownError';
 
-    // Intentar loggear el error si logger está disponible
-    try {
-      const { logger: errorLogger } = await import('@/libs/Logger');
-      errorLogger.error(
+    // Usar logger si está disponible, sino usar console.error
+    if (logger) {
+      logger.error(
         {
           error,
           errorMessage,
@@ -201,9 +245,29 @@ export async function POST(req: NextRequest) {
         },
         'Error in vectorize API route',
       );
-    } catch {
-      // Si no se puede importar logger, al menos loggear en consola
-      console.error('Error in vectorize API route:', errorMessage, errorStack);
+    } else {
+      // Si no hay logger, intentar importarlo
+      try {
+        const { logger: errorLogger } = await import('@/libs/Logger');
+        errorLogger.error(
+          {
+            error,
+            errorMessage,
+            errorStack,
+            errorName,
+            filePath: (error as any)?.filePath,
+          },
+          'Error in vectorize API route',
+        );
+      } catch {
+        // Si no se puede importar logger, al menos loggear en consola
+
+        console.error('[ERROR] Error in vectorize API route:', {
+          errorMessage,
+          errorStack,
+          errorName,
+        });
+      }
     }
 
     return NextResponse.json(

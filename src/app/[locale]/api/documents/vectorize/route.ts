@@ -65,6 +65,11 @@ export async function POST(req: NextRequest) {
         contentType: requestInfo.contentType,
         contentLength: requestInfo.contentLength,
       },
+      nodeEnv: process.env.NODE_ENV,
+      hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
     });
 
     // Importaciones dinámicas en runtime para evitar análisis durante el build
@@ -85,8 +90,26 @@ export async function POST(req: NextRequest) {
     }
 
     logStep('SUPABASE_IMPORT', { message: 'Importing SupabaseAdmin' });
-    const { getSupabaseAdmin } = await import('@/libs/SupabaseAdmin');
-    logStep('SUPABASE_IMPORT', { message: 'SupabaseAdmin imported successfully' });
+    let getSupabaseAdmin;
+    try {
+      const supabaseModule = await import('@/libs/SupabaseAdmin');
+      getSupabaseAdmin = supabaseModule.getSupabaseAdmin;
+      logStep('SUPABASE_IMPORT', { message: 'SupabaseAdmin imported successfully' });
+    } catch (importError) {
+      logError('SUPABASE_IMPORT', importError, {
+        message: 'Failed to import SupabaseAdmin',
+        errorType: 'MODULE_IMPORT_ERROR',
+      });
+      return NextResponse.json(
+        {
+          error: 'Error al cargar módulo de Supabase',
+          details: process.env.NODE_ENV === 'development'
+            ? (importError instanceof Error ? importError.message : String(importError))
+            : undefined,
+        },
+        { status: 500 },
+      );
+    }
 
     logStep('AUTH', { message: 'Checking authentication' });
     const { userId, orgId } = await auth();
@@ -105,27 +128,23 @@ export async function POST(req: NextRequest) {
     logStep('PARSE_BODY', { message: 'Parsing request body' });
     let body: any;
     try {
-      // Leer el body como texto primero para debugging
-      const bodyText = await req.text();
-      logStep('PARSE_BODY', {
-        message: 'Request body received',
-        bodyLength: bodyText.length,
-        bodyPreview: bodyText.substring(0, 200), // Primeros 200 caracteres para debugging
-      });
-
-      // Parsear el JSON
-      body = JSON.parse(bodyText);
+      // Leer el body como JSON directamente
+      // No podemos leer req.text() y luego req.json() porque el stream solo se puede leer una vez
+      body = await req.json();
       filePath = body?.filePath;
       logStep('PARSE_BODY', {
         message: 'Request body parsed successfully',
         hasFilePath: !!filePath,
         filePath: filePath || 'undefined',
         hasMetadata: !!body?.metadata,
+        bodyKeys: Object.keys(body || {}),
       });
     } catch (parseError) {
       const error = parseError as Error;
-      // Detectar si es un error de tamaño de body
-      if (error.message?.includes('413') || error.message?.includes('too large') || error.message?.includes('Content Too Large')) {
+      const errorMessage = error.message || String(error);
+
+      // Detectar diferentes tipos de errores de parsing
+      if (errorMessage.includes('413') || errorMessage.includes('too large') || errorMessage.includes('Content Too Large')) {
         logError('PARSE_BODY', parseError, {
           message: 'Request body too large',
           errorType: 'BODY_TOO_LARGE',
@@ -140,15 +159,35 @@ export async function POST(req: NextRequest) {
           { status: 413 },
         );
       }
+
+      // Detectar si el body ya fue consumido
+      if (errorMessage.includes('body stream already read') || errorMessage.includes('body used already') || errorMessage.includes('already been read')) {
+        logError('PARSE_BODY', parseError, {
+          message: 'Body stream already consumed',
+          errorType: 'BODY_ALREADY_CONSUMED',
+        });
+        return NextResponse.json(
+          {
+            error: 'Error al leer el cuerpo de la petición',
+            details: process.env.NODE_ENV === 'development'
+              ? 'El body de la petición ya fue consumido. Esto puede ocurrir si hay múltiples lecturas del stream.'
+              : undefined,
+          },
+          { status: 400 },
+        );
+      }
+
+      // Error genérico de parsing
       logError('PARSE_BODY', parseError, {
         message: 'Failed to parse JSON',
-        errorMessage: error.message,
+        errorMessage,
         errorName: error.name,
+        errorStack: error.stack,
       });
       return NextResponse.json(
         {
           error: 'Invalid JSON in request body',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+          details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
         },
         { status: 400 },
       );
@@ -268,7 +307,27 @@ export async function POST(req: NextRequest) {
     try {
       // Importación dinámica para evitar análisis durante el build
       logStep('DOCUMENT_PROCESSING', { message: 'Importing document-processor' });
-      const { processDocumentForVectorization } = await import('@/features/documents/utils/document-processor');
+      let processDocumentForVectorization;
+      try {
+        const processorModule = await import('@/features/documents/utils/document-processor');
+        processDocumentForVectorization = processorModule.processDocumentForVectorization;
+        logStep('DOCUMENT_PROCESSING', { message: 'document-processor imported successfully' });
+      } catch (importError) {
+        logError('DOCUMENT_PROCESSING', importError, {
+          message: 'Failed to import document-processor',
+          errorType: 'MODULE_IMPORT_ERROR',
+        });
+        throw new Error(
+          `Error al cargar módulo de procesamiento de documentos: ${
+            importError instanceof Error ? importError.message : String(importError)
+          }`,
+        );
+      }
+
+      if (!processDocumentForVectorization) {
+        throw new Error('processDocumentForVectorization is not defined after import');
+      }
+
       logStep('DOCUMENT_PROCESSING', { message: 'Calling processDocumentForVectorization' });
 
       const result = await processDocumentForVectorization(
@@ -358,7 +417,27 @@ export async function POST(req: NextRequest) {
     try {
       // Importación dinámica para evitar análisis durante el build
       logStep('VECTOR_STORE_INSERT', { message: 'Importing vector-store utils' });
-      const { insertDocumentChunks } = await import('@/features/documents/utils/vector-store');
+      let insertDocumentChunks;
+      try {
+        const vectorStoreModule = await import('@/features/documents/utils/vector-store');
+        insertDocumentChunks = vectorStoreModule.insertDocumentChunks;
+        logStep('VECTOR_STORE_INSERT', { message: 'vector-store imported successfully' });
+      } catch (importError) {
+        logError('VECTOR_STORE_INSERT', importError, {
+          message: 'Failed to import vector-store',
+          errorType: 'MODULE_IMPORT_ERROR',
+        });
+        throw new Error(
+          `Error al cargar módulo de vector-store: ${
+            importError instanceof Error ? importError.message : String(importError)
+          }`,
+        );
+      }
+
+      if (!insertDocumentChunks) {
+        throw new Error('insertDocumentChunks is not defined after import');
+      }
+
       logStep('VECTOR_STORE_INSERT', { message: 'Calling insertDocumentChunks' });
       insertResult = await insertDocumentChunks(chunksWithMetadata);
       logStep('VECTOR_STORE_INSERT', {

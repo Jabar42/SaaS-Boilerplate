@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.documents (
   id bigserial NOT NULL,
   content text NULL,
   metadata jsonb NULL,
-  embedding extensions.vector NULL,
+  embedding vector(1536) NULL,
   CONSTRAINT documents_pkey PRIMARY KEY (id)
 ) TABLESPACE pg_default;
 

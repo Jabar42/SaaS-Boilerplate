@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 
 import { useFiles } from '../hooks/useFiles';
 import { useFileUpload } from '../hooks/useFileUpload';
-import { useVectorizeTrigger } from '../hooks/useVectorizeTrigger';
 import type { FileItem } from '../types/file.types';
 import { FileDeleteDialog } from './FileDeleteDialog';
 import { FileList } from './FileList';
@@ -22,7 +21,6 @@ export function FileManager() {
   const { toast } = useToast();
   const { userFiles, globalFiles, loading, refetch } = useFiles();
   const { uploadMultipleFiles, uploadProgress } = useFileUpload();
-  const { triggerVectorization } = useVectorizeTrigger();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null);
 
@@ -35,16 +33,8 @@ export function FileManager() {
       // Refrescar lista de archivos después de subida
       await refetch();
 
-      // Trigger vectorización solo para archivos exitosos (opcional)
-      for (const result of successful) {
-        const file = files.find(f => f.name === result.fileName);
-        if (file) {
-          await triggerVectorization(file.name, {
-            size: file.size,
-            type: file.type,
-          });
-        }
-      }
+      // Nota: La vectorización ya se dispara automáticamente en useFileUpload
+      // después de cada upload exitoso, así que no es necesario hacer nada aquí
 
       // Mostrar notificaciones según el resultado
       if (failed.length > 0 && successful.length > 0) {

@@ -8,6 +8,8 @@ export const runtime = 'nodejs';
 export const dynamicParams = true;
 // Evitar que Next.js intente analizar esta ruta durante el build
 export const revalidate = 0;
+// Aumentar timeout para operaciones de vectorización que pueden tardar
+export const maxDuration = 60; // 60 segundos (máximo en Vercel Hobby es 60s)
 
 // Importaciones dinámicas para evitar que Next.js las analice durante el build
 // Estas se cargarán solo en runtime
@@ -16,6 +18,15 @@ export async function POST(req: NextRequest) {
   const startTime = Date.now();
   let logger: any = null;
   let filePath: string | undefined;
+
+  // Capturar información de la petición para debugging
+  const requestInfo = {
+    url: req.url,
+    method: req.method,
+    headers: Object.fromEntries(req.headers.entries()),
+    contentType: req.headers.get('content-type'),
+    contentLength: req.headers.get('content-length'),
+  };
 
   // Helper para logging con prefijo
   const logStep = (step: string, data?: any) => {
@@ -47,7 +58,14 @@ export async function POST(req: NextRequest) {
   };
 
   try {
-    logStep('INIT', { message: 'Starting vectorization request' });
+    logStep('INIT', {
+      message: 'Starting vectorization request',
+      requestInfo: {
+        url: requestInfo.url,
+        contentType: requestInfo.contentType,
+        contentLength: requestInfo.contentLength,
+      },
+    });
 
     // Importaciones dinámicas en runtime para evitar análisis durante el build
     try {
@@ -87,13 +105,51 @@ export async function POST(req: NextRequest) {
     logStep('PARSE_BODY', { message: 'Parsing request body' });
     let body: any;
     try {
-      body = await req.json();
+      // Leer el body como texto primero para debugging
+      const bodyText = await req.text();
+      logStep('PARSE_BODY', {
+        message: 'Request body received',
+        bodyLength: bodyText.length,
+        bodyPreview: bodyText.substring(0, 200), // Primeros 200 caracteres para debugging
+      });
+
+      // Parsear el JSON
+      body = JSON.parse(bodyText);
       filePath = body?.filePath;
-      logStep('PARSE_BODY', { message: 'Request body parsed', hasFilePath: !!filePath });
+      logStep('PARSE_BODY', {
+        message: 'Request body parsed successfully',
+        hasFilePath: !!filePath,
+        filePath: filePath || 'undefined',
+        hasMetadata: !!body?.metadata,
+      });
     } catch (parseError) {
-      logError('PARSE_BODY', parseError, { message: 'Failed to parse JSON' });
+      const error = parseError as Error;
+      // Detectar si es un error de tamaño de body
+      if (error.message?.includes('413') || error.message?.includes('too large') || error.message?.includes('Content Too Large')) {
+        logError('PARSE_BODY', parseError, {
+          message: 'Request body too large',
+          errorType: 'BODY_TOO_LARGE',
+        });
+        return NextResponse.json(
+          {
+            error: 'El cuerpo de la petición es demasiado grande. El límite es de 50MB.',
+            details: process.env.NODE_ENV === 'development'
+              ? 'Considera usar archivos más pequeños o aumentar el límite en next.config.mjs'
+              : undefined,
+          },
+          { status: 413 },
+        );
+      }
+      logError('PARSE_BODY', parseError, {
+        message: 'Failed to parse JSON',
+        errorMessage: error.message,
+        errorName: error.name,
+      });
       return NextResponse.json(
-        { error: 'Invalid JSON in request body' },
+        {
+          error: 'Invalid JSON in request body',
+          details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        },
         { status: 400 },
       );
     }

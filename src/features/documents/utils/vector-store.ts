@@ -37,9 +37,16 @@ export async function insertDocumentChunks(
         let result;
         try {
           // Opción 1: Pasar array directamente (puede funcionar con Prisma)
+          // Validar que el embedding tenga 768 dimensiones (Gemini text-embedding-004)
+          if (chunk.embedding.length !== 768) {
+            throw new Error(
+              `Invalid embedding dimension: expected 768, got ${chunk.embedding.length}`,
+            );
+          }
+
           result = await db.$queryRawUnsafe<Array<{ id: bigint }>>(
             `INSERT INTO public.documents (content, metadata, embedding)
-             VALUES ($1::text, $2::jsonb, $3::vector)
+             VALUES ($1::text, $2::jsonb, $3::vector(768))
              RETURNING id`,
             chunk.content,
             JSON.stringify(chunk.metadata),
@@ -47,10 +54,17 @@ export async function insertDocumentChunks(
           );
         } catch {
           // Opción 2: Si falla, usar formato de array de PostgreSQL
+          // Validar que el embedding tenga 768 dimensiones (Gemini text-embedding-004)
+          if (chunk.embedding.length !== 768) {
+            throw new Error(
+              `Invalid embedding dimension: expected 768, got ${chunk.embedding.length}`,
+            );
+          }
+
           const embeddingString = `[${chunk.embedding.join(',')}]`;
           result = await db.$queryRawUnsafe<Array<{ id: bigint }>>(
             `INSERT INTO public.documents (content, metadata, embedding)
-             VALUES ($1::text, $2::jsonb, $3::vector)
+             VALUES ($1::text, $2::jsonb, $3::vector(768))
              RETURNING id`,
             chunk.content,
             JSON.stringify(chunk.metadata),

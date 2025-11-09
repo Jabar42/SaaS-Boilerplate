@@ -11,6 +11,7 @@ export const Env = createEnv({
     BILLING_PLAN_ENV: z.enum(['dev', 'test', 'prod']),
     N8N_ENDPOINT: z.string().url(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+    GEMINI_API_KEY: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().optional(),
@@ -33,6 +34,7 @@ export const Env = createEnv({
     BILLING_PLAN_ENV: process.env.BILLING_PLAN_ENV,
     N8N_ENDPOINT: process.env.N8N_ENDPOINT,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,

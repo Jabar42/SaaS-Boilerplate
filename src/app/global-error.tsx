@@ -1,11 +1,27 @@
 'use client';
 
 import NextError from 'next/error';
+import { useEffect } from 'react';
+
+import { logRouteError } from '@/libs/Logger';
 
 export default function GlobalError(props: {
   error: Error & { digest?: string };
   params: { locale: string };
 }) {
+  useEffect(() => {
+    // Log global error with context
+    logRouteError('global', props.error, {
+      method: 'GET',
+      url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+      headers: typeof window !== 'undefined'
+        ? {
+            'user-agent': window.navigator.userAgent,
+          }
+        : undefined,
+    });
+  }, [props.error]);
+
   return (
     <html lang={props.params.locale}>
       <body>

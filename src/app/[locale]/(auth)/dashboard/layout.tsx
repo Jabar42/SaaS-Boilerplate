@@ -6,17 +6,29 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { DashboardBreadcrumb } from '@/features/dashboard/DashboardBreadcrumb';
+import { logServerComponentError } from '@/libs/Logger';
 
 export async function generateMetadata(props: { params: { locale: string } }) {
-  const t = await getTranslations({
-    locale: props.params.locale,
-    namespace: 'Dashboard',
-  });
+  try {
+    const t = await getTranslations({
+      locale: props.params.locale,
+      namespace: 'Dashboard',
+    });
 
-  return {
-    title: t('meta_title'),
-    description: t('meta_description'),
-  };
+    return {
+      title: t('meta_title'),
+      description: t('meta_description'),
+    };
+  } catch (error) {
+    logServerComponentError('DashboardLayout:generateMetadata', error, {
+      locale: props.params.locale,
+    });
+    // Return default metadata on error
+    return {
+      title: 'Dashboard',
+      description: 'Dashboard',
+    };
+  }
 }
 
 export default function DashboardLayout(props: { children: React.ReactNode }) {

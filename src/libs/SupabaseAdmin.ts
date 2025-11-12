@@ -36,10 +36,36 @@ export function getSupabaseAdmin(): SupabaseClient {
   }
 
   // Crear cliente con Service Role Key (bypass RLS)
+  // Configuración adicional para mejorar la estabilidad de conexión
   supabaseAdminInstance = createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    global: {
+      fetch: (url, options = {}) => {
+        // Agregar timeout y mejor manejo de errores de red
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
+
+        return fetch(url, {
+          ...options,
+          signal: controller.signal,
+        })
+          .finally(() => {
+            clearTimeout(timeoutId);
+          })
+          .catch((error) => {
+            // Mejorar mensajes de error de red
+            if (error.name === 'AbortError') {
+              throw new Error('Timeout al conectar con Supabase Storage');
+            }
+            if (error.message?.includes('fetch failed')) {
+              throw new Error('Error de conexión con Supabase Storage. Verifica tu conexión a internet.');
+            }
+            throw error;
+          });
+      },
     },
   });
 

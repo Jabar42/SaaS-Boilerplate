@@ -1,5 +1,6 @@
 import { db } from '@/libs/DB';
 import { logger } from '@/libs/Logger';
+import { getSupabaseAdmin } from '@/libs/SupabaseAdmin';
 
 export type DocumentChunkMetadata = {
   filePath: string;
@@ -13,6 +14,11 @@ export type DocumentChunkMetadata = {
 /**
  * Inserta chunks en la tabla documents del vector store
  * Compatible con el esquema de n8n Supabase Vector Store
+ *
+ * Usa Supabase Admin con Service Role Key para evitar problemas con el pooler
+ * y las restricciones de autenticación de tenant. La inserción se hace a través
+ * de una función stored procedure (insert_document_chunk) que se ejecuta con
+ * SECURITY DEFINER, permitiendo bypass de RLS.
  */
 export async function insertDocumentChunks(
   chunks: Array<{
@@ -26,54 +32,36 @@ export async function insertDocumentChunks(
       return { success: true, insertedCount: 0 };
     }
 
-    // Insertar uno por uno para mayor compatibilidad con pgvector
-    // pgvector puede ser sensible al formato del array
+    const supabase = getSupabaseAdmin();
     const insertedIds: bigint[] = [];
 
     for (const chunk of chunks) {
       try {
-        // pgvector acepta arrays directamente, pero también podemos usar formato de string
-        // Intentar primero con el array directamente
-        let result;
-        try {
-          // Opción 1: Pasar array directamente (puede funcionar con Prisma)
-          // Validar que el embedding tenga 768 dimensiones (Gemini text-embedding-004)
-          if (chunk.embedding.length !== 768) {
-            throw new Error(
-              `Invalid embedding dimension: expected 768, got ${chunk.embedding.length}`,
-            );
-          }
-
-          result = await db.$queryRawUnsafe<Array<{ id: bigint }>>(
-            `INSERT INTO public.documents (content, metadata, embedding)
-             VALUES ($1::text, $2::jsonb, $3::vector(768))
-             RETURNING id`,
-            chunk.content,
-            JSON.stringify(chunk.metadata),
-            chunk.embedding,
-          );
-        } catch {
-          // Opción 2: Si falla, usar formato de array de PostgreSQL
-          // Validar que el embedding tenga 768 dimensiones (Gemini text-embedding-004)
-          if (chunk.embedding.length !== 768) {
-            throw new Error(
-              `Invalid embedding dimension: expected 768, got ${chunk.embedding.length}`,
-            );
-          }
-
-          const embeddingString = `[${chunk.embedding.join(',')}]`;
-          result = await db.$queryRawUnsafe<Array<{ id: bigint }>>(
-            `INSERT INTO public.documents (content, metadata, embedding)
-             VALUES ($1::text, $2::jsonb, $3::vector(768))
-             RETURNING id`,
-            chunk.content,
-            JSON.stringify(chunk.metadata),
-            embeddingString,
+        // Validar que el embedding tenga 768 dimensiones (Gemini text-embedding-004)
+        if (chunk.embedding.length !== 768) {
+          throw new Error(
+            `Invalid embedding dimension: expected 768, got ${chunk.embedding.length}`,
           );
         }
 
-        if (Array.isArray(result) && result.length > 0 && result[0]) {
-          insertedIds.push(result[0].id);
+        // Convertir embedding a formato string para pgvector
+        // pgvector acepta el formato: [1.0, 2.0, 3.0, ...]
+        const embeddingString = `[${chunk.embedding.join(',')}]`;
+
+        // Usar Supabase RPC para llamar a la función stored procedure
+        // Esto evita problemas con el pooler y las restricciones de tenant
+        const { data, error } = await supabase.rpc('insert_document_chunk', {
+          p_content: chunk.content,
+          p_metadata: chunk.metadata,
+          p_embedding: embeddingString,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data !== null && data !== undefined) {
+          insertedIds.push(BigInt(data));
         }
       } catch (error) {
         logger.error(
@@ -116,6 +104,8 @@ export async function insertDocumentChunks(
 
 /**
  * Elimina chunks por filePath
+ * Usa Prisma para ejecutar la consulta SQL
+ * Maneja errores de conexión de forma resiliente
  */
 export async function deleteDocumentChunksByFilePath(
   filePath: string,
@@ -131,16 +121,40 @@ export async function deleteDocumentChunksByFilePath(
       deletedCount: result as number,
     };
   } catch (error) {
-    logger.error({ error, filePath }, 'Error deleting document chunks');
+    // Manejar errores de conexión de forma más específica
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorName = error instanceof Error ? error.name : 'UnknownError';
+
+    // Si es un error de conexión, no es crítico (el archivo ya fue eliminado)
+    if (
+      errorName === 'PrismaClientInitializationError'
+      || errorMessage.includes('Can\'t reach database server')
+      || errorMessage.includes('connection')
+      || errorMessage.includes('timeout')
+    ) {
+      logger.warn(
+        { error, filePath, errorName, errorMessage },
+        'Error de conexión al eliminar chunks (no crítico - archivo ya eliminado)',
+      );
+      // Retornar success: false pero con un mensaje claro
+      return {
+        success: false,
+        error: 'Error de conexión con la base de datos. Los chunks se limpiarán automáticamente más tarde.',
+      };
+    }
+
+    // Para otros errores, loggear como error
+    logger.error({ error, filePath, errorName, errorMessage }, 'Error deleting document chunks');
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
     };
   }
 }
 
 /**
  * Verifica si un documento está vectorizado (tiene chunks en la BD)
+ * Usa Prisma para ejecutar la consulta SQL
  */
 export async function checkDocumentVectorized(
   filePath: string,

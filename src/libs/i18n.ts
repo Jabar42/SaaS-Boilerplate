@@ -14,6 +14,8 @@ import { AllLocales } from '@/utils/AppConfig';
 // 3. Every 24 hours at 5am, the workflow will run automatically
 
 // Using internationalization in Server Components
+// Note: `locale` parameter is deprecated in next-intl 3.22+, but still works in 3.21.1
+// When upgrading to 3.22+, use `await requestLocale()` instead
 export default getRequestConfig(async ({ locale }) => {
   // Validate that the incoming `locale` parameter is valid
   if (!AllLocales.includes(locale)) {
@@ -21,6 +23,7 @@ export default getRequestConfig(async ({ locale }) => {
   }
 
   return {
+    locale, // Required to avoid warning in next-intl 3.21.1+
     messages: (await import(`../locales/${locale}.json`)).default,
   };
 });

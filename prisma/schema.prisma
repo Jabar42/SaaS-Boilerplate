@@ -6,6 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // La URL se sobrescribe en DB.ts para usar DIRECT_URL si está disponible
   url      = env("DATABASE_URL")
 }
 
@@ -27,6 +28,16 @@ model Todo {
   message   String
   updatedAt DateTime @default(now())
   createdAt DateTime @default(now())
+}
+
+model Document {
+  id        BigInt   @id @default(autoincrement()) @db.BigInt
+  content   String?  @db.Text
+  metadata  Json?
+  embedding Unsupported("vector(768)")?
+  
+  @@index([metadata], type: Gin, map: "documents_metadata_idx")
+  @@map("documents")
 }
 
 

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { logRouteError } from '@/libs/Logger';
+import { logRouteError } from '@/libs/Logger.client';
 
 export default function DashboardError(props: {
   error: Error & { digest?: string };

@@ -6,7 +6,7 @@ import {
 } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 
-import { logError } from './libs/Logger';
+import { logError } from './libs/Logger.edge';
 import { AllLocales, AppConfig } from './utils/AppConfig';
 
 const intlMiddleware = createMiddleware({

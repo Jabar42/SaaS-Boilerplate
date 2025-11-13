@@ -1,8 +1,7 @@
-import logtail from '@logtail/pino';
+import 'server-only';
+
 import pino, { type DestinationStream } from 'pino';
 import pretty from 'pino-pretty';
-
-import { Env } from './Env';
 
 let stream: DestinationStream;
 let loggerInstance: pino.Logger | null = null;
@@ -14,41 +13,14 @@ function initializeLogger() {
   }
 
   try {
-    if (Env.LOGTAIL_SOURCE_TOKEN) {
-      // Inicializar logtail de forma asíncrona pero no bloquear
-      // Usar solo pretty por ahora y actualizar cuando logtail esté listo
-      stream = pretty({
-        colorize: true,
-      });
-      loggerInstance = pino({ base: undefined }, stream);
-
-      // Inicializar logtail en background
-      logtail({
-        sourceToken: Env.LOGTAIL_SOURCE_TOKEN,
-        options: {
-          sendLogsToBetterStack: true,
-        },
-      })
-        .then((logtailStream) => {
-          // Actualizar stream con multistream cuando logtail esté listo
-          stream = pino.multistream([
-            logtailStream,
-            {
-              stream: pretty(),
-            },
-          ]);
-          loggerInstance = pino({ base: undefined }, stream);
-        })
-        .catch((error) => {
-          // Si falla logtail, continuar con pretty
-          console.error('Failed to initialize Logtail, using console only:', error);
-        });
-    } else {
-      stream = pretty({
-        colorize: true,
-      });
-      loggerInstance = pino({ base: undefined }, stream);
-    }
+    // Usar pretty para consola
+    // Nota: Logtail se deshabilitó temporalmente debido a problemas de build
+    // con módulos de Node.js. Si necesitas Logtail, configura una solución
+    // alternativa o usa una versión que no requiera worker_threads
+    stream = pretty({
+      colorize: true,
+    });
+    loggerInstance = pino({ base: undefined }, stream);
   } catch (error) {
     // Fallback completo si todo falla
     console.error('Failed to initialize logger:', error);

@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 import createJiti from 'jiti';
 import withNextIntl from 'next-intl/plugin';
+import webpack from 'webpack';
 
 const jiti = createJiti(fileURLToPath(import.meta.url));
 
@@ -29,11 +30,35 @@ export default bundleAnalyzer(
         '@langchain/textsplitters',
         'ai',
         '@ai-sdk/openai',
+        '@logtail/pino',
+        '@logtail/node',
+        'pino',
+        'pino-pretty',
       ],
     },
-    // Configurar límite de tamaño para Server Actions (50MB)
-    serverActions: {
-      bodySizeLimit: '50mb',
+    webpack: (config, { isServer }) => {
+      if (!isServer) {
+        // Excluir módulos de Node.js del bundle del cliente
+        config.resolve.fallback = {
+          ...config.resolve.fallback,
+          'worker_threads': false,
+          'zlib': false,
+          'http': false,
+          'https': false,
+          'stream': false,
+          'util': false,
+        };
+        // Ignorar completamente @logtail/pino y el módulo de logtail en el cliente
+        config.plugins.push(
+          new webpack.IgnorePlugin({
+            resourceRegExp: /^@logtail\/pino$/,
+          }),
+          new webpack.IgnorePlugin({
+            resourceRegExp: /Logger\.logtail\.ts$/,
+          }),
+        );
+      }
+      return config;
     },
   }),
 );

@@ -3,7 +3,7 @@
 import NextError from 'next/error';
 import { useEffect } from 'react';
 
-import { logRouteError } from '@/libs/Logger';
+import { logRouteError } from '@/libs/Logger.client';
 
 export default function GlobalError(props: {
   error: Error & { digest?: string };

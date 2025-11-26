@@ -94,8 +94,8 @@ Retorna respuesta al usuario
 **ANTES (OpenAI):**
 
 ```typescript
-import { embedMany } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { embedMany } from "ai";
 
 const { embeddings } = await embedMany({
   model: openai.embedding("text-embedding-3-small"),

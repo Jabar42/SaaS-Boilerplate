@@ -1,11 +1,13 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import { useUser } from '@clerk/nextjs';
 import { DefaultChatTransport, isTextUIPart } from 'ai';
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useFiles } from '@/features/documents/hooks/useFiles';
+import { logError } from '@/libs/Logger.client';
 
 import { useSelectedDocuments } from '../hooks/useSelectedDocuments';
 import { ChatInput } from './ChatInput';
@@ -19,6 +21,7 @@ type ChatWindowProps = {
 
 export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
   const params = useParams();
+  const { user } = useUser();
   const locale = params?.locale as string | undefined;
   const finalApiEndpoint = apiEndpoint || `/${locale || 'en'}/api/chat`;
   const [isDocumentSelectorOpen, setIsDocumentSelectorOpen] = useState(false);
@@ -27,7 +30,35 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
     toggleDocument,
     setSelectedDocuments,
   } = useSelectedDocuments();
-  const { userFiles } = useFiles();
+  const { userFiles, error: filesError, loading: filesLoading } = useFiles();
+
+  // Log initialization (only in development)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.log('[ChatWindow] Component initialized', {
+        locale,
+        apiEndpoint: finalApiEndpoint,
+        userId: user?.id || 'unknown',
+        orgId: user?.organizationMemberships?.[0]?.organization?.id || 'none',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Log files loading errors
+  useEffect(() => {
+    if (filesError) {
+      logError('ChatWindow:useFiles_error', new Error(filesError), {
+        locale,
+        userId: user?.id || 'unknown',
+        orgId: user?.organizationMemberships?.[0]?.organization?.id || 'none',
+        filesError,
+        filesLoading,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [filesError, filesLoading, locale, user]);
 
   // Filtrar documentos seleccionados para incluir solo los que realmente existen
   const availableFilePaths = useMemo(
@@ -45,6 +76,16 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
     // Solo limpiar si hay documentos inválidos (cuando selectedDocuments tiene más que validSelectedDocuments)
     // Esto ocurre cuando hay documentos en localStorage que ya no existen en la lista de archivos
     if (selectedDocuments.length > validSelectedDocuments.length) {
+      const invalidCount = selectedDocuments.length - validSelectedDocuments.length;
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.log('[ChatWindow] Cleaning invalid documents', {
+          invalidCount,
+          totalSelected: selectedDocuments.length,
+          validSelected: validSelectedDocuments.length,
+          timestamp: new Date().toISOString(),
+        });
+      }
       // Hay documentos inválidos, limpiarlos del estado (esto también actualizará localStorage)
       setSelectedDocuments(validSelectedDocuments);
     }
@@ -70,14 +111,47 @@ export function ChatWindow({ apiEndpoint }: ChatWindowProps) {
   const isLoading = status === 'submitted' || status === 'streaming';
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Log chat errors
+  useEffect(() => {
+    if (error) {
+      logError('ChatWindow:useChat_error', error, {
+        locale,
+        apiEndpoint: finalApiEndpoint,
+        userId: user?.id || 'unknown',
+        orgId: user?.organizationMemberships?.[0]?.organization?.id || 'none',
+        status,
+        messagesCount: messages.length,
+        selectedDocumentsCount: documentsRef.current.length,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [error, locale, finalApiEndpoint, user, status, messages.length]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSend = (text: string) => {
-    chatHelpers.sendMessage({
-      text,
-    });
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.log('[ChatWindow] Sending message', {
+          textLength: text.length,
+          selectedDocumentsCount: documentsRef.current.length,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      chatHelpers.sendMessage({
+        text,
+      });
+    } catch (err) {
+      logError('ChatWindow:handleSend_exception', err, {
+        locale,
+        textLength: text.length,
+        selectedDocumentsCount: documentsRef.current.length,
+        timestamp: new Date().toISOString(),
+      });
+    }
   };
 
   return (

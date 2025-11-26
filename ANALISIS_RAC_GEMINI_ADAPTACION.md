@@ -29,7 +29,7 @@ El proyecto **RAC-gemini** utiliza la API de Google Gemini con **File Search Sto
 // Archivos se suben directamente a Gemini File Search Store
 ai.fileSearchStores.uploadToFileSearchStore({
   fileSearchStoreName: ragStoreName,
-  file: file, // File object directamente
+  file, // File object directamente
 });
 ```
 
@@ -241,11 +241,10 @@ const response = await ai.models.generateContent({
 
 ```typescript
 // ANTES (OpenAI):
-import { embedMany } from "ai";
 import { openai } from "@ai-sdk/openai";
-
 // DESPUÉS (Gemini):
 import { GoogleGenAI } from "@google/genai";
+import { embedMany } from "ai";
 
 export async function processDocumentForVectorization(
   fileUrl: string,
@@ -266,7 +265,7 @@ export async function processDocumentForVectorization(
   // Subir a Gemini
   let op = await gemini.fileSearchStores.uploadToFileSearchStore({
     fileSearchStoreName: storeName.name,
-    file: file,
+    file,
   });
 
   // Polling hasta completar

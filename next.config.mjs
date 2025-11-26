@@ -41,12 +41,12 @@ export default bundleAnalyzer(
         // Excluir módulos de Node.js del bundle del cliente
         config.resolve.fallback = {
           ...config.resolve.fallback,
-          'worker_threads': false,
-          'zlib': false,
-          'http': false,
-          'https': false,
-          'stream': false,
-          'util': false,
+          worker_threads: false,
+          zlib: false,
+          http: false,
+          https: false,
+          stream: false,
+          util: false,
         };
         // Ignorar completamente @logtail/pino y el módulo de logtail en el cliente
         config.plugins.push(

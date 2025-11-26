@@ -224,74 +224,203 @@ export async function listFiles(): Promise<{
   userFiles?: FileItem[];
   globalFiles?: FileItem[];
 }> {
+  const startTime = Date.now();
+  let userId: string | undefined;
+
   try {
     // Verificar autenticación con Clerk
-    const { userId } = await auth();
+    logger.debug({}, '[Server Action] listFiles: Verificando autenticación');
+    const authResult = await auth();
+    userId = authResult.userId || undefined;
 
     if (!userId) {
-      logger.warn('[Server Action] listFiles: Usuario no autenticado');
+      logger.warn({
+        hasAuthResult: !!authResult,
+        timestamp: new Date().toISOString(),
+      }, '[Server Action] listFiles: Usuario no autenticado');
       return { success: false, error: 'No autenticado' };
     }
 
+    logger.debug({
+      userId,
+      timestamp: new Date().toISOString(),
+    }, '[Server Action] listFiles: Usuario autenticado');
+
     // Obtener cliente de Supabase (validará que el Service Role Key esté configurado)
-    const supabaseAdmin = getSupabaseAdmin();
+    logger.debug({}, '[Server Action] listFiles: Obteniendo cliente de Supabase');
+    let supabaseAdmin;
+    try {
+      supabaseAdmin = getSupabaseAdmin();
+      logger.debug({}, '[Server Action] listFiles: Cliente de Supabase obtenido');
+    } catch (supabaseError) {
+      const errorMessage = supabaseError instanceof Error ? supabaseError.message : 'Error desconocido al obtener Supabase';
+      const errorStack = supabaseError instanceof Error ? supabaseError.stack : undefined;
+      logger.error(
+        {
+          error: supabaseError,
+          errorMessage,
+          errorStack,
+          userId,
+          timestamp: new Date().toISOString(),
+        },
+        '[Server Action] Error obteniendo cliente de Supabase',
+      );
+      return { success: false, error: `Error de configuración: ${errorMessage}` };
+    }
 
     // Obtener archivos del usuario desde /tenants/{userId}/
     const userPath = `tenants/${userId}/`;
-    logger.debug({ userPath }, '[Server Action] listFiles: Listando archivos del usuario');
-    const { data: userData, error: userError } = await supabaseAdmin.storage
-      .from('documents')
-      .list(userPath, {
-        limit: 100,
-        offset: 0,
-        sortBy: { column: 'created_at', order: 'desc' },
-      });
+    logger.debug({
+      userPath,
+      userId,
+      timestamp: new Date().toISOString(),
+    }, '[Server Action] listFiles: Listando archivos del usuario');
+
+    let userData;
+    let userError;
+    try {
+      const result = await supabaseAdmin.storage
+        .from('documents')
+        .list(userPath, {
+          limit: 100,
+          offset: 0,
+          sortBy: { column: 'created_at', order: 'desc' },
+        });
+      userData = result.data;
+      userError = result.error;
+    } catch (listError) {
+      const errorMessage = listError instanceof Error ? listError.message : 'Error desconocido al listar archivos';
+      const errorStack = listError instanceof Error ? listError.stack : undefined;
+      logger.error(
+        {
+          error: listError,
+          errorMessage,
+          errorStack,
+          userId,
+          userPath,
+          timestamp: new Date().toISOString(),
+        },
+        '[Server Action] Excepción al listar archivos del usuario',
+      );
+      return { success: false, error: `Error al listar archivos: ${errorMessage}` };
+    }
 
     if (userError) {
       logger.error(
-        { error: userError, userId, userPath, message: userError.message },
-        '[Server Action] Error listando archivos del usuario',
+        {
+          error: userError,
+          userId,
+          userPath,
+          message: userError.message,
+          name: userError.name,
+          timestamp: new Date().toISOString(),
+        },
+        '[Server Action] Error de Supabase listando archivos del usuario',
       );
-      return { success: false, error: userError.message };
+      return { success: false, error: userError.message || 'Error al listar archivos del usuario' };
     }
 
-    const userFiles: FileItem[] = (userData || []).map((file) => {
-      // Usar el nombre original de metadata si existe, sino el nombre sanitizado
-      const displayName = (file.metadata?.originalName as string | undefined) || file.name;
+    logger.debug({
+      filesCount: userData?.length || 0,
+      userId,
+      timestamp: new Date().toISOString(),
+    }, '[Server Action] listFiles: Procesando archivos del usuario');
 
-      return {
-        name: displayName,
-        path: `${userPath}${file.name}`,
-        size: file.metadata?.size || 0,
-        createdAt: new Date(file.created_at || Date.now()),
-        updatedAt: new Date(file.updated_at || Date.now()),
-        isGlobal: false,
-        mimetype: file.metadata?.mimetype as string | undefined,
-      };
-    });
+    let userFiles: FileItem[] = [];
+    try {
+      userFiles = (userData || []).map((file) => {
+        // Usar el nombre original de metadata si existe, sino el nombre sanitizado
+        const displayName = (file.metadata?.originalName as string | undefined) || file.name;
+
+        return {
+          name: displayName,
+          path: `${userPath}${file.name}`,
+          size: file.metadata?.size || 0,
+          createdAt: new Date(file.created_at || Date.now()),
+          updatedAt: new Date(file.updated_at || Date.now()),
+          isGlobal: false,
+          mimetype: file.metadata?.mimetype as string | undefined,
+        };
+      });
+      logger.debug({
+        userFilesCount: userFiles.length,
+        userId,
+        timestamp: new Date().toISOString(),
+      }, '[Server Action] listFiles: Archivos del usuario procesados');
+    } catch (parseError) {
+      const errorMessage = parseError instanceof Error ? parseError.message : 'Error desconocido al procesar archivos';
+      const errorStack = parseError instanceof Error ? parseError.stack : undefined;
+      logger.error(
+        {
+          error: parseError,
+          errorMessage,
+          errorStack,
+          userId,
+          userDataCount: userData?.length || 0,
+          timestamp: new Date().toISOString(),
+        },
+        '[Server Action] Error procesando archivos del usuario',
+      );
+      // Continuar con array vacío en lugar de fallar completamente
+      userFiles = [];
+    }
 
     // Obtener archivos globales desde /global/
     const globalPath = 'global/';
-    logger.debug({ globalPath }, '[Server Action] listFiles: Listando archivos globales');
-    const { data: globalData, error: globalError } = await supabaseAdmin.storage
-      .from('documents')
-      .list(globalPath, {
-        limit: 100,
-        offset: 0,
-        sortBy: { column: 'created_at', order: 'desc' },
-      });
+    logger.debug({
+      globalPath,
+      userId,
+      timestamp: new Date().toISOString(),
+    }, '[Server Action] listFiles: Listando archivos globales');
+
+    let globalData: any[] | null = null;
+    let globalError: any = null;
+    try {
+      const result = await supabaseAdmin.storage
+        .from('documents')
+        .list(globalPath, {
+          limit: 100,
+          offset: 0,
+          sortBy: { column: 'created_at', order: 'desc' },
+        });
+      globalData = result.data;
+      globalError = result.error;
+    } catch (listError) {
+      const errorMessage = listError instanceof Error ? listError.message : 'Error desconocido al listar archivos globales';
+      const errorStack = listError instanceof Error ? listError.stack : undefined;
+      logger.error(
+        {
+          error: listError,
+          errorMessage,
+          errorStack,
+          userId,
+          globalPath,
+          timestamp: new Date().toISOString(),
+        },
+        '[Server Action] Excepción al listar archivos globales',
+      );
+      // No fallar completamente si hay error con archivos globales
+      globalError = { message: errorMessage } as any;
+    }
 
     if (globalError) {
       logger.error(
-        { error: globalError, message: globalError.message },
-        '[Server Action] Error listando archivos globales',
+        {
+          error: globalError,
+          message: globalError?.message || 'Unknown error',
+          name: globalError?.name || 'UnknownError',
+          userId,
+          timestamp: new Date().toISOString(),
+        },
+        '[Server Action] Error de Supabase listando archivos globales',
       );
       // No fallar completamente si hay error con archivos globales
     }
 
-    const globalFiles: FileItem[] = globalError
-      ? []
-      : (globalData || []).map((file) => {
+    let globalFiles: FileItem[] = [];
+    if (!globalError) {
+      try {
+        globalFiles = (globalData || []).map((file) => {
           // Usar el nombre original de metadata si existe, sino el nombre sanitizado
           const displayName = (file.metadata?.originalName as string | undefined) || file.name;
 
@@ -305,25 +434,61 @@ export async function listFiles(): Promise<{
             mimetype: file.metadata?.mimetype as string | undefined,
           };
         });
+        logger.debug({
+          globalFilesCount: globalFiles.length,
+          userId,
+          timestamp: new Date().toISOString(),
+        }, '[Server Action] listFiles: Archivos globales procesados');
+      } catch (parseError) {
+        const errorMessage = parseError instanceof Error ? parseError.message : 'Error desconocido al procesar archivos globales';
+        const errorStack = parseError instanceof Error ? parseError.stack : undefined;
+        logger.error(
+          {
+            error: parseError,
+            errorMessage,
+            errorStack,
+            userId,
+            globalDataCount: globalData?.length || 0,
+            timestamp: new Date().toISOString(),
+          },
+          '[Server Action] Error procesando archivos globales',
+        );
+        // Continuar con array vacío
+        globalFiles = [];
+      }
+    }
 
-    logger.debug(
-      { userFilesCount: userFiles.length, globalFilesCount: globalFiles.length },
-      '[Server Action] listFiles: Éxito',
-    );
+    const duration = Date.now() - startTime;
+    logger.debug({
+      userFilesCount: userFiles.length,
+      globalFilesCount: globalFiles.length,
+      userId,
+      durationMs: duration,
+      timestamp: new Date().toISOString(),
+    }, '[Server Action] listFiles: Éxito');
 
     return { success: true, userFiles, globalFiles };
   } catch (error) {
+    const duration = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    const errorName = error instanceof Error ? error.name : 'UnknownError';
+
     logger.error(
       {
         error,
-        message: error instanceof Error ? error.message : 'Error desconocido',
-        stack: error instanceof Error ? error.stack : undefined,
+        errorMessage,
+        errorStack,
+        errorName,
+        userId: userId || 'unknown',
+        durationMs: duration,
+        timestamp: new Date().toISOString(),
       },
-      '[Server Action] Exception listando archivos',
+      '[Server Action] Exception no manejada en listFiles',
     );
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Error desconocido',
+      error: errorMessage,
     };
   }
 }

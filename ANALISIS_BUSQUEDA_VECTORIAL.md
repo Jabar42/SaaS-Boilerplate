@@ -398,7 +398,7 @@ export async function searchSimilarDocuments(
   try {
     // Construir query SQL
     let query = `
-      SELECT 
+      SELECT
         id,
         content,
         metadata,
@@ -453,10 +453,11 @@ export async function searchSimilarDocuments(
 ```typescript
 // src/app/[locale]/api/documents/search/route.ts
 
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { embed } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { auth } from "@clerk/nextjs/server";
+import { embed } from "ai";
+import { NextRequest, NextResponse } from "next/server";
+
 import { searchSimilarDocuments } from "@/features/documents/utils/vector-store";
 
 export async function POST(req: NextRequest) {

@@ -108,7 +108,13 @@
     "message_state_title": "C'est parti",
     "message_state_description": "Vous pouvez personnaliser cette page en modifiant le fichier dans <code>dashboard/page.tsx</code>",
     "message_state_button": "Mettez une étoile sur GitHub",
-    "message_state_alternative": "Vous voulez plus de fonctionnalités en utilisant la même stack ? Essayez <url></url>."
+    "message_state_alternative": "Vous voulez plus de fonctionnalités en utilisant la même stack ? Essayez <url></url>.",
+    "stat_todos_title": "Tâches",
+    "stat_todos_description": "Total des tâches créées",
+    "stat_documents_title": "Documents",
+    "stat_documents_description": "Total des documents téléchargés",
+    "stat_patients_title": "Patients",
+    "stat_patients_description": "Total des patients enregistrés"
   },
   "UserProfile": {
     "title_bar": "Profil utilisateur",

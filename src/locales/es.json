@@ -108,7 +108,13 @@
     "message_state_title": "Comencemos",
     "message_state_description": "Puedes personalizar esta página editando el archivo en <code>dashboard/page.tsx</code>",
     "message_state_button": "Solicitar Demo",
-    "message_state_alternative": "¿Quieres más características? Prueba <url></url>."
+    "message_state_alternative": "¿Quieres más características? Prueba <url></url>.",
+    "stat_todos_title": "Tareas",
+    "stat_todos_description": "Total de tareas creadas",
+    "stat_documents_title": "Documentos",
+    "stat_documents_description": "Total de documentos subidos",
+    "stat_patients_title": "Pacientes",
+    "stat_patients_description": "Total de pacientes registrados"
   },
   "UserProfile": {
     "title_bar": "Perfil de Usuario",
